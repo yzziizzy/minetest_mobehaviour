@@ -134,6 +134,19 @@ local fence_region = function(item)
 	})
 end
 
+local wander_around = function() 
+	return bt.Sequence("wander", {
+		bt.Print("wandering"),
+		bt.FindSpotOnGround(),
+		bt.MoveTargetRandom({x=8,y=0,z=8}),
+		bt.Approach(2),
+		--bt.Animate("walk"),
+		--bt.SetNode(item);
+		--bt.WaitTicks(1),
+	})
+	
+end
+
 local build_house = function(item) 
 	return bt.Sequence("", {
 		bt.Succeed(bt.FindGroupCampfire()),
@@ -203,7 +216,7 @@ local build_campfire = function()
 		bt.WaitTicks(1),
 		
 		bt.MoveTarget({x=0, y=0, z=1}),
-		bt.SetNode({name="giants:campfire"}),
+		bt.SetNode({name=mn..":campfire"}),
 		
 		bt.FindGroupCampfire(),
 		bt.SetRole("founder"),
@@ -360,109 +373,78 @@ local build_walls = function(what)
 end
 
 
-local make_giant = function(name, behavior_fn) 
+local make_bunny = function(name, behavior_fn) 
 
-	mobs:register_simple_mob("giants:giant_"..name, {
-		type = "monster",
-		passive = false,
-		attack_type = "dogfight",
-		reach = 2,
-		damage = 1,
-		hp_min = 4,
-		hp_max = 20,
-		armor = 100,
-		collisionbox = {-0.35,-1.0,-0.35, 0.35,0.8,0.35},
+	mobs:register_simple_mob(mn..":"..name, {
+		type = "animal",
+		passive = true,
+		reach = 1,
+		hp_min = 1,
+		hp_max = 4,
+		armor = 200,
+		collisionbox = {-0.268, -0.5, -0.268,  0.268, 0.167, 0.268},
 		visual = "mesh",
-		mesh = "character.b3d",
+		mesh = "mobs_bunny.b3d",
 		drawtype = "front",
 		textures = {
-			{"mobs_npc.png"},
+			{"mobs_bunny_grey.png"},
+			{"mobs_bunny_brown.png"},
+			{"mobs_bunny_white.png"},
 		},
-		makes_footstep_sound = true,
-		walk_velocity = 1.5,
-		run_velocity = 4,
-		view_range = 15,
+		sounds = {},
+		makes_footstep_sound = false,
+		walk_velocity = 1,
+		run_velocity = 2,
+		runaway = true,
 		jump = true,
+		view_range = 15,
 		floats = 0,
 		drops = {
-			{name = "default:iron_lump",
-			chance = 1, min = 3, max = 5},
+			{name = "mobs:meat_raw",
+			chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
 		light_damage = 0,
-		fear_height = 3,
+		fear_height = 4,
 		animation = {
-			speed_normal = 30,
-			speed_run = 30,
-			stand_start = 0,
-			stand_end = 79,
-			walk_start = 168,
-			walk_end = 187,
-			run_start = 168,
-			run_end = 187,
-			punch_start = 200,
-			punch_end = 219,
+			speed_normal = 15,
+			stand_start = 1,
+			stand_end = 15,
+			walk_start = 16,
+			walk_end = 24,
+			punch_start = 16,
+			punch_end = 24,
 		},
-		
+		on_rightclick = function(self, clicker)
+			
+		end,
 		pre_activate = function(self, s,d)
 			self.bt = bt.Repeat("root", nil, {
-				--burn_shit({"doors:door_wood_b_1", "doors:door_wood_t_1", "doors:door_wood_b_2", "doors:door_wood_t_2"})
-	-- 			blow_shit_up({"doors:door_steel_b_1", "doors:door_steel_t_1", "doors:door_steel_b_2", "doors:door_steel_t_2"})
-				--quarry({"default:dirt"})
-				--build_walls({"default:dirt"})
 				behavior_fn();
 			})
 			
 		end
 	})
 	
-	mobs:register_egg("giants:giant_"..name, "Giant ("..name..")", "default_desert_sand.png", 1)
+	mobs:register_egg(mn..":"..name, name.." Egg", "default_desert_sand.png", 1)
 end
 
-make_giant("quarry", function() 
-	return quarry({"default:sand"})
+make_bunny("quarry", function() 
+	return wander_around()
 end)
-
+--[[
 make_giant("lumberjack", function() 
 	return lumberjack()
 end)
 
 make_giant("digger", function() 
 	return dig_hole({"default:dirt", "default:dirt_with_grass", "default:sand", "default:stone"})
-end)
-
-make_giant("builder", function() 
-	return build_house()
-end)
-
-make_giant("founder", function() 
-	return found_village()
-end)
-
-make_giant("forager", function() 
-	return forager()
-end)
-
-make_giant("madman", function() 
-	return wander_around()
-end)
-
---[[
-		self.bt = bt.Repeat("root", nil, {
-			bt.Sequence("snuff torches", {
-				bt.FindNewNodeNear({"default:torch"}, 20, 4),
-				bt.Selector("seek", {
-					bt.TryApproach(1.8),
-					bt.BashWalls(),
-				}),
--- 				bt.Destroy(),
--- 				bt.SetFire(),
-			})
-		})
+end)]]
 
 
-]]
---mobs:register_spawn("giants:giant", {"default:desert_sand"}, 20, 0, 7000, 2, 31000)
 
---mobs:register_egg("giants:giant", "Giant", "default_desert_sand.png", 1)
+
+--mobs:register_spawn(mn..":giant", {"default:desert_sand"}, 20, 0, 7000, 2, 31000)
+
+--mobs:register_egg(mn..":giant", "Giant", "default_desert_sand.png", 1)

@@ -192,7 +192,7 @@ bt.register_action("Spawn", {
 	tick = function(node, data)
 		local pos = {x = data.targetPos.x, y = data.targetPos.y + 2, z = data.targetPos.z}
 		
-		local name = "giants:giant_"..node.role 
+		local name = "mobehavior:giant_"..node.role 
 		local mob = minetest.add_entity(pos, name)
 		
 		return "success"

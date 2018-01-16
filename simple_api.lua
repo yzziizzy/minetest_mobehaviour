@@ -236,7 +236,7 @@ minetest.register_entity(name, {
 		end
 
 		-- node replace check (cow eats grass etc.)
-		replace(self, pos)
+		-- handled by btree -- replace(self, pos)
 
 		-- mob plays random sound at times
 		if self.sounds.random

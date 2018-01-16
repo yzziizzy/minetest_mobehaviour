@@ -89,7 +89,7 @@ bt.tick = function(node, data)
 	return bt_fns.tick[node.kind](node, data)
 end
 
-local path = minetest.get_modpath("giants")
+local path = minetest.get_modpath("mobehavior")
 
 dofile(path..'/behaviors/core.lua')
 dofile(path..'/behaviors/predicates.lua')

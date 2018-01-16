@@ -34,7 +34,11 @@ bt.register_action("FindSpotOnGround", {
 	
 	reset = function(node, data)
 		-- really shitty quick hack
-		local targetpos = minetest.find_node_near(data.pos, 2, {name="default:dirt_with_grass"})
+		local targetpos = minetest.find_node_near(data.pos, 2, {
+			"default:dirt_with_grass",
+			"default:dirt_with_dry_grass",
+			"default:dirt_with_rainforest_litter",
+		})
 		if targetpos ~= nil then
 			targetpos.y = targetpos.y + 1
 			data.targetPos = targetpos
@@ -410,27 +414,27 @@ bt.register_action("MoveTargetRandom", {
 bt.register_action("FindGroupCampfire", {
 	tick = function(node, data)
 		if data.groupID ~= nil then -- already has a group
-			if giants.groupData[data.groupID] ~= nil then
+			if mobehavior.groupData[data.groupID] ~= nil then
 				print("@  joined group " .. data.groupID .. "\n")
-				print(dump(giants.groupData[data.groupID]))
+				print(dump(mobehavior.groupData[data.groupID]))
 				return "success"
 			end
 		end
 		
-		local cf = minetest.find_node_near(data.pos, 50, {name="giants:campfire"})
+		local cf = minetest.find_node_near(data.pos, 50, {name="mobehavior:campfire"})
 		if cf ~= nil then
 			local key = cf.x..":"..cf.y..":"..cf.z
 			
-			if giants.groupData[key] == nil then
-				print(dump(giants))
--- 				print(dump(giants.groupData))
+			if mobehavior.groupData[key] == nil then
+				print(dump(mobehavior))
+-- 				print(dump(mobehavior.groupData))
 				print("!   failed to find group for key "..key.."\n")
 				return "failed"
 			end
 			
 			data.groupID = key
 			print("@  joined group 2 " .. key .. "\n")
-			print(dump(giants.groupData[data.groupID]))
+			print(dump(mobehavior.groupData[data.groupID]))
 			return "success"
 		else
 			print("!   failed to find group\n")
@@ -442,7 +446,7 @@ bt.register_action("FindGroupCampfire", {
 bt.register_action("HasGroup", {
 	tick = function(node, data)
 		if data.groupID ~= nil then -- already has a group
-			if giants.groupData[data.groupID] ~= nil then
+			if mobehavior.groupData[data.groupID] ~= nil then
 				return "success"
 			end
 		end

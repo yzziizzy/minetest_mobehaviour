@@ -401,7 +401,7 @@ bt.register_action("SetRole", {
 		data.role = node.role
 		
 		if data.groupID ~= nil then
-			local gd = giants.groupData[data.groupID]
+			local gd = mobehavior.groupData[data.groupID]
 			if gd == nil then
 				return "success"
 			end
