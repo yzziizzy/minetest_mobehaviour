@@ -103,6 +103,72 @@ bt.register_action("Selector", {
 })
 
 
+
+
+-- not yet working
+--[[
+	This node tries everything in succession until something comes back 
+	running, like Selector, except it retries the whole list every few 
+	ticks (tick_divisor) whether the previous child finished or not. If
+	the previously running child is returned to it is not reset. If a new
+	child returns running, the old child is reset and the new one runs.
+	
+	A few data properties must be preserved:
+		targetPos
+]]
+bt.register_action("Priority", {
+	tick = function(node, data) 
+		
+		local ret
+		
+		if node.current_kid  == -1 then
+			node.current_kid = 1
+			ret = "failed" -- trick reset into being run
+		end
+		
+		while node.current_kid <= table.getn(node.kids) do
+		
+			local cn = node.kids[node.current_kid]
+			
+			-- reset fresh nodes
+			if ret == "failed" then
+				print("resetting kid "..node.current_kid)
+				bt.reset(cn, data)
+			end
+			
+			-- tick the current node
+			ret = bt.tick(cn, data)
+			print(" selector '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
+			if ret == "running" or ret == "success" then
+				return ret
+			end
+			
+			node.current_kid = node.current_kid  + 1
+		end
+			
+		
+		return "failed"
+	end,
+	
+	reset = function(node, data)
+		print("priority resetting - PRIORITY IS BROKEN")
+		node.current_kid = -1
+		node.fallback_kid = -1
+	end,
+	
+	ctor = function(name, tick_divisor, list)
+		return {
+			name=name,
+			tick_divisor = tick_divisor,
+			current_kid=-1,
+			fallback_kid=-1,
+			kids=list,
+		}
+	end,
+})
+
+
+
 bt.register_action("Repeat", {
 	tick = function(node, data)
 		--tprint(node)
@@ -223,16 +289,18 @@ bt.register_action("Invert", {
 bt.register_action("Random", {
 	tick = function(node, data)
 		return bt.tick(node.kids[node.chosen_kid], data)
+		--return "failed"
 	end,
 	
 	reset = function(node, data)
-		node.chosen_kid = (math.random() % table.getn(node.kids)) + 1
+		node.chosen_kid = math.random(1, table.getn(node.kids))
+		print("chosen: "..node.chosen_kid)
 		bt.reset(node.kids[node.chosen_kid], data)
 	end,
 	
 	ctor = function(kids)
 		return {
-			kid=kids,
+			kids=kids,
 			chosen_kid=nil,
 		}
 	end,

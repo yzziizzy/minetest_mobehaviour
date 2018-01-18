@@ -134,17 +134,118 @@ local fence_region = function(item)
 	})
 end
 
-local wander_around = function() 
+local wander_around = function(dist) 
 	return bt.Sequence("wander", {
 		bt.Print("wandering"),
-		bt.FindSpotOnGround(),
-		bt.MoveTargetRandom({x=8,y=0,z=8}),
-		bt.Approach(2),
+		bt.RandomDirection(),
+		bt.MoveInDirection(dist),
 		--bt.Animate("walk"),
 		--bt.SetNode(item);
-		--bt.WaitTicks(1),
+		bt.WaitTicks(1),
 	})
 	
+end
+
+local seek_food = function(dist, food_nodes) 
+
+	return bt.Sequence("seek_food", {
+		bt.FindNodeNear(food_nodes, dist),
+		bt.Approach(1.2),
+		bt.Animate("punch"),
+		bt.WaitTicks(3),
+		bt.DigNode(),
+		bt.AddHealth(1),
+		bt.Animate("stand"),
+	})
+end
+
+local bunny_root = function() 
+	local food = {
+		"group:wheat",
+		"group:cotton",
+		"group:rice",
+		"group:grass",
+		"group:flower",
+		"group:plant",
+	}
+
+	return bt.Sequence("bunny", {
+		bt.Random({
+			wander_around(2),
+			wander_around(4),
+			wander_around(6),
+			wander_around(8),
+			bt.WaitTicks(1),
+			bt.WaitTicks(1),
+			bt.WaitTicks(2),
+			bt.WaitTicks(2),
+			seek_food(6, food),
+			
+			-- breeding
+		})
+	})
+end
+
+
+local wolf_root = function() 
+	return bt.Sequence("wolf", {
+		
+		-- FindEntityNear
+		-- ApproachEntity
+		-- Attack
+		
+	})
+
+
+end
+
+
+local raid_chest = function(dist, qty)
+	return bt.Sequence("raid_chest", {
+		bt.FindNodeNear({"default:chest"}, dist),
+		bt.Approach(1.2),
+		bt.Animate("punch"),
+		bt.WaitTicks(4),
+		bt.RobChestRandom(qty),
+		bt.AddHealth(1),
+		bt.Animate("stand"),
+	})
+end
+local seek_and_destroy = function(dist, time, node)
+	return bt.Sequence("seek_and_destroy", {
+		bt.FindNodeNear(node, dist),
+		bt.Approach(1.2),
+		bt.Animate("punch"),
+		bt.WaitTicks(time),
+		bt.SetNode("air"),
+		bt.Animate("stand"),
+	})
+end
+
+local rat_root = function() 
+	local food = {
+		"group:wheat",
+		"group:cotton",
+		"group:rice",
+	}
+
+	return bt.Sequence("rat", {
+		bt.Random({
+ 			wander_around(2),
+			wander_around(4),
+			wander_around(6),
+-- 			wander_around(8),
+			bt.WaitTicks(1),
+-- 			bt.WaitTicks(1),
+			bt.WaitTicks(2),
+-- 			bt.WaitTicks(2),
+			seek_food(6, food),
+			raid_chest(20, 1),
+			seek_and_destroy(20, 12, {"doors:door_wood_a","doors:door_wood_b", "doors:trapdoor_a", "doors:trapdoor_b"}),
+			seek_and_destroy(20, 18, {"doors:door_glass_a","doors:door_glass_b"}),
+			-- breeding
+		})
+	})
 end
 
 local build_house = function(item) 
@@ -373,49 +474,15 @@ local build_walls = function(what)
 end
 
 
-local make_bunny = function(name, behavior_fn) 
+
+
+local sdfadsf = function(name, behavior_fn) 
 
 	mobs:register_simple_mob(mn..":"..name, {
-		type = "animal",
-		passive = true,
-		reach = 1,
-		hp_min = 1,
-		hp_max = 4,
-		armor = 200,
-		collisionbox = {-0.268, -0.5, -0.268,  0.268, 0.167, 0.268},
-		visual = "mesh",
-		mesh = "mobs_bunny.b3d",
-		drawtype = "front",
-		textures = {
-			{"mobs_bunny_grey.png"},
-			{"mobs_bunny_brown.png"},
-			{"mobs_bunny_white.png"},
-		},
-		sounds = {},
-		makes_footstep_sound = false,
-		walk_velocity = 1,
-		run_velocity = 2,
-		runaway = true,
-		jump = true,
-		view_range = 15,
-		floats = 0,
-		drops = {
-			{name = "mobs:meat_raw",
-			chance = 1, min = 1, max = 1},
-		},
-		water_damage = 0,
-		lava_damage = 4,
-		light_damage = 0,
-		fear_height = 4,
-		animation = {
-			speed_normal = 15,
-			stand_start = 1,
-			stand_end = 15,
-			walk_start = 16,
-			walk_end = 24,
-			punch_start = 16,
-			punch_end = 24,
-		},
+
+
+
+
 		on_rightclick = function(self, clicker)
 			
 		end,
@@ -430,8 +497,28 @@ local make_bunny = function(name, behavior_fn)
 	mobs:register_egg(mn..":"..name, name.." Egg", "default_desert_sand.png", 1)
 end
 
-make_bunny("quarry", function() 
-	return wander_around()
+
+
+
+
+
+
+
+
+
+make_wolf("wolf", function() 
+	return wander_around(6)
+end)
+
+make_bunny("bunny", function() 
+	return bunny_root()
+end)
+make_rat("rat", function() 
+	return rat_root()
+end)
+
+make_bear("bear", function() 
+	return wander_around(6)
 end)
 --[[
 make_giant("lumberjack", function() 

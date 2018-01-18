@@ -133,6 +133,10 @@ bt.register_action("MoveInDirection", {
 			y = round(data.pos.y + (data.direction.y * node.dist)),
 			z = round(data.pos.z + (data.direction.z * node.dist)),
 		}
+		-- this implementation is buggy; the entire point of moving
+		--  in a certain direction is to not be unable to reach impossible targets
+		data.mob.destination = data.targetPos
+		data.mob.approachDistance = 2
 	end,
 	
 	ctor = function(dist) return { dist= dist } end,

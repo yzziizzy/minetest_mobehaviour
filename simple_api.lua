@@ -42,7 +42,7 @@ minetest.register_entity(name, {
 	jump_chance = def.jump_chance or 0,
 	drawtype = def.drawtype, -- DEPRECATED, use rotate instead
 	rotate = math.rad(def.rotate or 0), --  0=front, 90=side, 180=back, 270=side2
-	lifetimer = def.lifetimer or 180, -- 3 minutes
+	--lifetimer = def.lifetimer or 180, -- 3 minutes
 	hp_min = def.hp_min or 5,
 	hp_max = def.hp_max or 10,
 	physical = true,
@@ -52,8 +52,10 @@ minetest.register_entity(name, {
 	mesh = def.mesh,
 	makes_footstep_sound = def.makes_footstep_sound or false,
 	view_range = def.view_range or 5,
-	walk_velocity = def.walk_velocity or 1,
-	run_velocity = def.run_velocity or 2,
+	pace_velocity = {
+		walk = def.walk_velocity or 1,
+		run = def.run_velocity or 2,
+	},
 	damage = def.damage or 0,
 	light_damage = def.light_damage or 0,
 	water_damage = def.water_damage or 0,
@@ -102,7 +104,11 @@ minetest.register_entity(name, {
 	runaway = def.runaway,
 	runaway_timer = 0,
 	destination = nil,
+	pace = "walk",
 	
+	-- needed for mobf meshes (wolves, deer)
+	automatic_face_movement_dir = true,
+                                
 	bt_timer = 0,
 	old_y = 0, -- some sort of weird bug
 	
@@ -289,8 +295,6 @@ minetest.register_entity(name, {
 					yaw = yaw + math.pi
 				end
 				
-				-- print("yaw " .. yaw)
-
 				self.object:setyaw(yaw)
 			end
 
@@ -307,7 +311,7 @@ minetest.register_entity(name, {
 				
 				
 				
-				set_velocity(self, self.walk_velocity)
+				set_velocity(self, self.pace_velocity[self.pace] or self.pace_velocity.walk)
 				set_animation(self, "walk")
 			else
 				-- we have arrived

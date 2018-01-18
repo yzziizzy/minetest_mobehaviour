@@ -152,3 +152,28 @@ bt.register_action("PopTarget", {
 	end,
 })
 
+
+-- changes to a different registered pace
+bt.register_action("SetPace", {
+	tick = function(node, data)
+		data.mob.pace = node.pace
+		return "success"
+	end,
+	
+	ctor = function(pace) return { pace = pace } end,
+})
+
+-- sets the speed for a pace
+bt.register_action("SetSpeed", {
+	tick = function(node, data)
+		data.mob.pace_velocity[node.pace] = node.speed
+		return "success"
+	end,
+	
+	ctor = function(pace, speed) 
+		return { 
+			pace = pace,
+			speed = speed,
+		}
+	end,
+})

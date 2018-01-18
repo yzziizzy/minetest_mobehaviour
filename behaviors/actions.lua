@@ -72,7 +72,14 @@ bt.register_action("SetNode", {
 		return "success"
 	end,
 	
-	ctor = function(sel) return { sel = sel } end,
+	ctor = function(sel)
+		if type(sel) == "string" then
+			sel = {name = sel}
+		end
+		return { 
+			sel = sel 
+		} 
+	end,
 })
 
 bt.register_action("IsNode", {
@@ -173,6 +180,61 @@ bt.register_action("PutInChest", {
 	ctor = function(sel) return { sel = sel } end,
 })
 
+bt.register_action("RobChestRandom", {
+	tick = function(node, data)
+		if data.targetPos == nil then
+			print("!   [RobChestRandom] no target position\n") 
+			return "failed"
+		end
+
+		local inv = minetest.get_inventory({type="node", pos=data.targetPos}) 
+		if inv == nil then 
+			print("!   [RobChestRandom] failed to get inv for "..dump(data.targetPos).."\n") 
+			return "failed"
+		end
+		
+		local mainsz = inv:get_size("main")
+		if mainsz == nil then
+			print("@   [RobChestRandom] main list is nil\n") 
+			return "success"
+		end
+		
+		local to_take = node.count
+		for i = 1, mainsz do
+			local st = inv:get_stack("main", i)
+		--	print("item: " .. i .." - ".. st:get_name())
+			if st:get_name() ~= "" then
+			--	print("taking item " .. st:get_name())
+				
+				local n = st:get_count()
+				local rem = n - to_take;
+				if rem < 0 then
+					to_take = -rem
+					rem = 0
+				else 
+					to_take = 0
+				end
+				
+				st:set_count(rem)
+				inv:set_stack("main", i, st)
+				
+				if to_take <= 0 then break end
+			end
+		end
+		
+		if to_take > 0 then
+			minetest.set_node(data.targetPos, {name="default:chest_open"})
+		end
+		
+		
+		--local leftovers = inv:add_item("main", items) 
+		
+		
+		return "success"
+	end,
+	
+	ctor = function(count) return { count = count } end,
+})
 
 
 bt.register_action("Die", {
@@ -254,6 +316,20 @@ bt.register_action("Punch", {
 	ctor = function(tool)
 		return {
 			tool=tool
+		}
+	end,
+})
+
+bt.register_action("AddHealth", {
+	tick = function(node, data)
+		local hp = data.mob.object:get_hp()
+		data.mob.object:set_hp(hp + node.n)
+		return "success"
+	end,
+	
+	ctor = function(n) 
+		return {
+			n = n
 		}
 	end,
 })
