@@ -1,5 +1,5 @@
-# minetest_giants
-A giant-themed mobs mod based on behavior trees
+# minetest_mobehavior
+A general-purpose mobs mod based on behavior trees. This is the active fork of my minetest_giants mod. Work on the giants mod will resume after this mod is stable and reasonably complete.
 
 
 Based on Mobs (Redo) by PilzAdam, KrupnovPavel, Zeg9 and TenPlus1
