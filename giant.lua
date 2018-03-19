@@ -476,28 +476,6 @@ end
 
 
 
-local sdfadsf = function(name, behavior_fn) 
-
-	mobs:register_simple_mob(mn..":"..name, {
-
-
-
-
-		on_rightclick = function(self, clicker)
-			
-		end,
-		pre_activate = function(self, s,d)
-			self.bt = bt.Repeat("root", nil, {
-				behavior_fn();
-			})
-			
-		end
-	})
-	
-	mobs:register_egg(mn..":"..name, name.." Egg", "default_desert_sand.png", 1)
-end
-
-
 
 
 
@@ -520,18 +498,8 @@ end)
 make_bear("bear", function() 
 	return wander_around(6)
 end)
---[[
-make_giant("lumberjack", function() 
-	return lumberjack()
+
+make_NPC("npc", function() 
+	return wander_around(6)
 end)
 
-make_giant("digger", function() 
-	return dig_hole({"default:dirt", "default:dirt_with_grass", "default:sand", "default:stone"})
-end)]]
-
-
-
-
---mobs:register_spawn(mn..":giant", {"default:desert_sand"}, 20, 0, 7000, 2, 31000)
-
---mobs:register_egg(mn..":giant", "Giant", "default_desert_sand.png", 1)

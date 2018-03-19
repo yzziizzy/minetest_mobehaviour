@@ -15,17 +15,19 @@ bt.register_action("FindNodeInRange", {
 			return
 		end
 		local list = minetest.find_nodes_in_area(r.min, r.max, node.sel)
+		--[[
 		print("searching for node in region "..node.sel[1].."\n")
 		print("search range: y="..r.min.y.." @ "..
 				"["..r.min.x..", "..r.min.y..", "..r.min.z.."], "..
 				"["..r.max.x..", "..r.max.y..", "..r.max.z.."]\n")
 		print("found "..#list.." nodes\n")
+		]]
 		if list ~= nil and #list > 0 then
 			node.regionEmpty = false
 			local n = list[1]
 			local node = minetest.get_node(n)
-			print("name: " .. node.name .. "\n")
-			print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
+			-- debug -- print("name: " .. node.name .. "\n")
+			-- debug -- print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
 			data.targetPos = n
 		else 
 			node.regionEmpty = true
@@ -44,7 +46,7 @@ bt.register_action("FindNodeInRange", {
 bt.register_action("FindPerimeterNodeInRegion", {
 	tick = function(node, data)
 		if data.region == nil or node.regionEmpty == true then 
-			print("could not find edge node in active region")
+			-- debug -- print("could not find edge node in active region")
 			return "failed" 
 		end
 		
@@ -74,8 +76,8 @@ bt.register_action("FindPerimeterNodeInRegion", {
 		if list ~= nil and #list > 0 then
 			local n = list[1]
 			local node = minetest.get_node(n)
-			print("name: " .. node.name .. "\n")
-			print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
+			-- debug -- print("name: " .. node.name .. "\n")
+			-- debug -- print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
 			data.targetPos = n
 			
 			return
@@ -94,8 +96,8 @@ bt.register_action("FindPerimeterNodeInRegion", {
 		if list ~= nil and #list > 0 then
 			local n = list[1]
 			local node = minetest.get_node(n)
-			print("name: " .. node.name .. "\n")
-			print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
+			-- debug -- print("name: " .. node.name .. "\n")
+			-- debug -- print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
 			data.targetPos = n
 			
 			return
@@ -115,8 +117,8 @@ bt.register_action("FindPerimeterNodeInRegion", {
 		if list ~= nil and #list > 0 then
 			local n = list[1]
 			local node = minetest.get_node(n)
-			print("name: " .. node.name .. "\n")
-			print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
+			-- debug -- print("name: " .. node.name .. "\n")
+			-- debug -- print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
 			data.targetPos = n
 			
 			return
@@ -135,8 +137,8 @@ bt.register_action("FindPerimeterNodeInRegion", {
 		if list ~= nil and #list > 0 then
 			local n = list[1]
 			local node = minetest.get_node(n)
-			print("name: " .. node.name .. "\n")
-			print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
+			-- debug -- print("name: " .. node.name .. "\n")
+			-- debug -- print("targeting node ["..n.x..", "..n.y..", "..n.z.."]\n")
 			data.targetPos = n
 			
 			return
@@ -160,7 +162,7 @@ bt.register_action("FindPerimeterNodeInRegion", {
 bt.register_action("ScaleRegion", {
 	tick = function(node, data)
 		if data.region == nil then 
-			print("no active region")
+			-- debug -- print("no active region")
 			return "failed" 
 		end
 		
@@ -179,10 +181,11 @@ bt.register_action("ScaleRegion", {
 		}
 		
 		r = data.region
+		--[[
 		print("region scaled to: y="..r.min.y.." @ "..
 			"["..r.min.x..", "..r.min.y..", "..r.min.z.."], "..
 			"["..r.max.x..", "..r.max.y..", "..r.max.z.."]\n")
-		
+		]]
 	end,
 	
 	ctor = function(scale)
@@ -196,7 +199,7 @@ bt.register_action("ScaleRegion", {
 bt.register_action("MoveRegion", {
 	tick = function(node, data)
 		if data.region == nil then 
-			print("no active region")
+			-- debug -- print("no active region")
 			return "failed" 
 		end
 		
@@ -215,10 +218,11 @@ bt.register_action("MoveRegion", {
 		}
 		
 		r = data.region
+		--[[
 		print("region moved to: y="..r.min.y.." @ "..
 			"["..r.min.x..", "..r.min.y..", "..r.min.z.."], "..
 			"["..r.max.x..", "..r.max.y..", "..r.max.z.."]\n")
-		
+		]]
 	end,
 	
 	ctor = function(scale)
@@ -233,7 +237,7 @@ bt.register_action("MoveRegion", {
 bt.register_action("FindRegionAround", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("could not find spot on ground")
+			-- debug -- print("could not find spot on ground")
 			return "failed" 
 		end
 		
@@ -250,9 +254,11 @@ bt.register_action("FindRegionAround", {
 				max= {x=tp.x + node.radius, y=tp.y, z=tp.z + node.radius},
 			}
 			
+			--[[
 			print("range set to y="..tp.y.." @ "..
 				"["..data.region.min.x..", "..data.region.min.z.."], "..
 				"["..data.region.max.x..", "..data.region.max.z.."]\n")
+			]]
 		end
 	end,
 	

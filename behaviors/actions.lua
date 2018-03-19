@@ -3,7 +3,7 @@
 
 bt.register_action("Destroy", {
 	tick = function(node, data)
-		print("Destroying target")
+		-- debug -- print("Destroying target")
 		if data.targetPos == nil then 
 			return "failed" 
 		end
@@ -41,7 +41,7 @@ bt.register_action("BashWalls", {
 
 bt.register_action("SetFire", {
 	tick = function(node, data)
-		print("setting fire to target")
+		-- debug -- print("setting fire to target")
 		if data.targetPos == nil then 
 			return "failed" 
 		end
@@ -102,7 +102,7 @@ bt.register_action("IsNode", {
 
 bt.register_action("ExtinguishFire", {
 	tick = function(node, data)
-		print("Extinguishing nearby fire")
+		-- debug -- print("Extinguishing nearby fire")
 		
 		local pos = minetest.find_node_near(data.pos, data.mob.reach, {"fire:basic_flame"})
 		if pos == nil then 
@@ -120,13 +120,13 @@ bt.register_action("DigNode", {
 	tick = function(node, data)
 		
 		if data.targetPos == nil then 
-			print("!   [DigNode] no target position\n")
+			-- debug -- print("!   [DigNode] no target position\n")
 			return "failed" 
 		end
 		
 		local n = minetest.get_node_or_nil(data.targetPos)
 		if n == nil then
-			print("!   [DigNode] node is nil\n")
+			-- debug -- print("!   [DigNode] node is nil\n")
 			return "success"
 		end
 		
@@ -144,25 +144,25 @@ bt.register_action("DigNode", {
 bt.register_action("PutInChest", {
 	tick = function(node, data)
 		if data.targetPos == nil then
-			print("!   [PutInChest] no target position\n") 
+			-- debug -- print("!   [PutInChest] no target position\n") 
 			return "failed"
 		end
 
 		local inv = minetest.get_inventory({type="node", pos=data.targetPos}) 
 		if inv == nil then 
-			print("!   [PutInChest] failed to get inv for "..dump(data.targetPos).."\n") 
+			-- debug -- print("!   [PutInChest] failed to get inv for "..dump(data.targetPos).."\n") 
 			return "failed"
 		end
 		
 		local list = data.inv:get_list("main")
 		if list == nil then
-			print("@   [PutInChest] main list is nil\n") 
+			-- debug -- print("@   [PutInChest] main list is nil\n") 
 			return "success"
 		end
 		local to_move = {}
 		for k,i in ipairs(list) do
 			if node.sel == nil or i:get_name() == node.sel then
-				print("adding item")
+				-- debug -- print("adding item")
 				inv:add_item("main", i)
 				list[k] = nil
 				--table.insert(to_move, i)
@@ -183,19 +183,19 @@ bt.register_action("PutInChest", {
 bt.register_action("RobChestRandom", {
 	tick = function(node, data)
 		if data.targetPos == nil then
-			print("!   [RobChestRandom] no target position\n") 
+			-- debug -- print("!   [RobChestRandom] no target position\n") 
 			return "failed"
 		end
 
 		local inv = minetest.get_inventory({type="node", pos=data.targetPos}) 
 		if inv == nil then 
-			print("!   [RobChestRandom] failed to get inv for "..dump(data.targetPos).."\n") 
+			-- debug -- print("!   [RobChestRandom] failed to get inv for "..dump(data.targetPos).."\n") 
 			return "failed"
 		end
 		
 		local mainsz = inv:get_size("main")
 		if mainsz == nil then
-			print("@   [RobChestRandom] main list is nil\n") 
+			-- debug -- print("@   [RobChestRandom] main list is nil\n") 
 			return "success"
 		end
 		
@@ -239,7 +239,7 @@ bt.register_action("RobChestRandom", {
 
 bt.register_action("Die", {
 	tick = function(node, data)
-		print("Dying now")
+		-- debug -- print("Dying now")
 		
 		-- TODO: remove inv and global data
 		
@@ -295,7 +295,7 @@ bt.register_action("PickUpNearbyItems", {
 
 bt.register_action("Punch", {
 	tick = function(node, data)
-		print("Punching with " .. node.tool)
+		-- debug -- print("Punching with " .. node.tool)
 		
 		if data.targetPos == nil then 
 			return "failed" 
@@ -303,7 +303,7 @@ bt.register_action("Punch", {
 		
 		local ret = data.mob.object:set_wielded_item(node.tool)
 		if ret == false then
-			print("failed to set tool")
+			-- debug -- print("failed to set tool")
 			return "failed"
 		end
 		local n = minetest.get_node(data.targetPos)

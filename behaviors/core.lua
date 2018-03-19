@@ -28,7 +28,7 @@ bt.register_action("Sequence", {
 			
 			-- tick the current node
 			ret = bt.tick(cn, data)
-			print(" sequence '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
+			-- debug -- print(" sequence '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
 			if ret == "running" or ret == "failed" then
 				return ret
 			end
@@ -70,13 +70,13 @@ bt.register_action("Selector", {
 			
 			-- reset fresh nodes
 			if ret == "failed" then
-				print("resetting kid "..node.current_kid)
+				-- debug -- print("resetting kid "..node.current_kid)
 				bt.reset(cn, data)
 			end
 			
 			-- tick the current node
 			ret = bt.tick(cn, data)
-			print(" selector '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
+			-- debug -- print(" selector '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
 			if ret == "running" or ret == "success" then
 				return ret
 			end
@@ -89,7 +89,7 @@ bt.register_action("Selector", {
 	end,
 	
 	reset = function(node, data)
-		print("selector resetting")
+		-- debug -- print("selector resetting")
 		node.current_kid = -1
 	end,
 	
@@ -132,13 +132,13 @@ bt.register_action("Priority", {
 			
 			-- reset fresh nodes
 			if ret == "failed" then
-				print("resetting kid "..node.current_kid)
+				-- debug -- print("resetting kid "..node.current_kid)
 				bt.reset(cn, data)
 			end
 			
 			-- tick the current node
 			ret = bt.tick(cn, data)
-			print(" selector '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
+			-- debug -- print(" selector '"..node.name.."' got status ["..ret.."] from kid "..node.current_kid)
 			if ret == "running" or ret == "success" then
 				return ret
 			end
@@ -151,7 +151,7 @@ bt.register_action("Priority", {
 	end,
 	
 	reset = function(node, data)
-		print("priority resetting - PRIORITY IS BROKEN")
+		-- debug -- print("priority resetting - PRIORITY IS BROKEN")
 		node.current_kid = -1
 		node.fallback_kid = -1
 	end,
@@ -294,7 +294,7 @@ bt.register_action("Random", {
 	
 	reset = function(node, data)
 		node.chosen_kid = math.random(1, table.getn(node.kids))
-		print("chosen: "..node.chosen_kid)
+		-- debug -- print("chosen: "..node.chosen_kid)
 		bt.reset(node.kids[node.chosen_kid], data)
 	end,
 	

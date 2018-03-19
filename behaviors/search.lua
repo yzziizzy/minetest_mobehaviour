@@ -2,7 +2,7 @@
 bt.register_action("FindNodeNear", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("could not find node near")
+			-- debug -- print("could not find node near")
 			return "failed" 
 		end
 		
@@ -25,7 +25,7 @@ bt.register_action("FindNodeNear", {
 bt.register_action("FindSpotOnGround", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("could not find spot on ground")
+			-- debug -- print("could not find spot on ground")
 			return "failed" 
 		end
 		
@@ -62,7 +62,7 @@ end
 function vector_normalize(a) 
 	local len = vector_len(a)
 	if len == 0 then
-		print("attempting to normalize zero-length vector\n")
+		-- debug -- print("attempting to normalize zero-length vector\n")
 		len = 1 -- just do something kinda sorta sane so we don't div/0. 
 	end
 	return {
@@ -80,12 +80,12 @@ end
 bt.register_action("DirectionTo", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("no target position\n")
+			-- debug -- print("no target position\n")
 			return "failed" 
 		end
 
 		if data.waypoints[node.wpname] == nil then 
-			print("no such waypoint: " .. node.wpname .. "\n")
+			-- debug -- print("no such waypoint: " .. node.wpname .. "\n")
 			return "failed" 
 		end
 		
@@ -120,7 +120,7 @@ bt.register_action("RandomDirection", {
 bt.register_action("MoveInDirection", {
 	tick = function(node, data)
 		if data.direction == nil then 
-			print("no current direction \n")
+			-- debug -- print("no current direction \n")
 			return "failed" 
 		end
 		
@@ -145,12 +145,12 @@ bt.register_action("MoveInDirection", {
 bt.register_action("MoveInDirectionFromWaypoint", {
 	tick = function(node, data)
 		if data.waypoints[node.wpname] == nil then 
-			print("no such waypoint: " .. node.wpname .. "\n")
+			-- debug -- print("no such waypoint: " .. node.wpname .. "\n")
 			return "failed" 
 		end
 
 		if data.direction == nil then 
-			print("no current direction \n")
+			-- debug -- print("no current direction \n")
 			return "failed" 
 		end
 		
@@ -178,7 +178,7 @@ bt.register_action("MoveInDirectionFromWaypoint", {
 bt.register_action("FindNewNodeNear", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("could not find node near")
+			-- debug -- print("could not find node near")
 			return "failed" 
 		end
 		
@@ -236,10 +236,10 @@ bt.register_action("FindPath", {
 		
 		local d = distance(data.pos, data.targetPos)
 		
-		print("dist: "..d)
+		-- debug -- print("dist: "..d)
 		
 		if d <= .1 then
-			print("arrived at target")
+			-- debug -- print("arrived at target")
 			return "success"
 		end
 		
@@ -253,7 +253,7 @@ bt.register_action("FindPath", {
 			
 			data.mob.path = path
 		else 
-			print("FindPath: targetPos is nil")
+			-- debug -- print("FindPath: targetPos is nil")
 		end
 	end,
 	
@@ -331,7 +331,7 @@ bt.register_action("AddToVisited", {
 bt.register_action("FindAreaCorners", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("could not find spot on ground")
+			-- debug -- print("could not find spot on ground")
 			return "failed" 
 		end
 		
@@ -361,7 +361,7 @@ bt.register_action("FindAreaCorners", {
 bt.register_action("MoveTarget", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("no active target")
+			-- debug -- print("no active target")
 			return "failed" 
 		end
 		
@@ -389,7 +389,7 @@ bt.register_action("MoveTarget", {
 bt.register_action("MoveTargetRandom", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
-			print("no active target")
+			-- debug -- print("no active target")
 			return "failed" 
 		end
 		
@@ -419,8 +419,8 @@ bt.register_action("FindGroupCampfire", {
 	tick = function(node, data)
 		if data.groupID ~= nil then -- already has a group
 			if mobehavior.groupData[data.groupID] ~= nil then
-				print("@  joined group " .. data.groupID .. "\n")
-				print(dump(mobehavior.groupData[data.groupID]))
+				-- debug -- print("@  joined group " .. data.groupID .. "\n")
+				-- debug -- print(dump(mobehavior.groupData[data.groupID]))
 				return "success"
 			end
 		end
@@ -430,18 +430,18 @@ bt.register_action("FindGroupCampfire", {
 			local key = cf.x..":"..cf.y..":"..cf.z
 			
 			if mobehavior.groupData[key] == nil then
-				print(dump(mobehavior))
+				-- debug -- print(dump(mobehavior))
 -- 				print(dump(mobehavior.groupData))
-				print("!   failed to find group for key "..key.."\n")
+				-- debug -- print("!   failed to find group for key "..key.."\n")
 				return "failed"
 			end
 			
 			data.groupID = key
-			print("@  joined group 2 " .. key .. "\n")
-			print(dump(mobehavior.groupData[data.groupID]))
+			-- debug -- print("@  joined group 2 " .. key .. "\n")
+			-- debug -- print(dump(mobehavior.groupData[data.groupID]))
 			return "success"
 		else
-			print("!   failed to find group\n")
+			-- debug -- print("!   failed to find group\n")
 			return "failed"
 		end
 	end,

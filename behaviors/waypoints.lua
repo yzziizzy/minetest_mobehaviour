@@ -78,8 +78,8 @@ bt.register_action("GetGroupWaypoint", {
 			or mobehavior.groupData[data.groupID].waypoints == nil
 			or mobehavior.groupData[data.groupID].waypoints[node.wpname] == nil then
 			
-			print(dump(mobehavior.groupData[data.groupID]))
-			print("!   failed to find group ("..data.groupID..") waypoint " .. node.wpname .. "\n")
+			-- debug -- print(dump(mobehavior.groupData[data.groupID]))
+			-- debug -- print("!   failed to find group ("..data.groupID..") waypoint " .. node.wpname .. "\n")
 			return "failed"
 		end
 	

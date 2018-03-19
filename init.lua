@@ -44,7 +44,9 @@ dofile(path.."/simple_api.lua")
 
 dofile(path.."/scripts/init.lua")
 dofile(path.."/entities.lua")
-dofile(path.."/giant.lua") 
+dofile(path.."/giant.lua")
+
+dofile(path.."/spawning.lua") 
 
 
 

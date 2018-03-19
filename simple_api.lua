@@ -135,7 +135,7 @@ minetest.register_entity(name, {
 		
 		if self.bt_timer > 2 then
 		
-			print("\n<<< start >>>")
+			-- debug -- print("\n<<< start >>>")
 			
 			-- inventories cannot be serialized and cause the game to crash if
 			-- placed in the entity's table
@@ -143,7 +143,7 @@ minetest.register_entity(name, {
 			btdata.inv = inv
 			
 			bt.tick(self.bt, btdata)
-			print("<<< end >>>\n")
+			-- debug -- print("<<< end >>>\n")
 			
 			-- so clear it out after running the behavior trees
 			btdata.inv = nil

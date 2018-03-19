@@ -8,7 +8,7 @@ bt.register_action("Approach", {
 		
 		local d = distance(data.pos, data.targetPos)
 		
-		print("dist: "..d)
+		--print("dist: "..d)
 		
 		if d <= node.dist then
 			print("arrived at target")
@@ -20,11 +20,11 @@ bt.register_action("Approach", {
 	
 	reset = function(node, data)
 		if data.targetPos ~= nil then
-			print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
+			-- debug -- print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
 			data.mob.destination = data.targetPos
 			data.mob.approachDistance = node.dist
 		else 
-			print("Approach: targetPos is nil")
+			-- debug -- print("Approach: targetPos is nil")
 		end
 	end,
 	
@@ -46,7 +46,7 @@ bt.register_action("TryApproach", {
 		local d = distance(data.pos, data.targetPos)
 		
 		if d <= node.dist then
-			print("arrived at target")
+			-- debug -- print("arrived at target")
 			node.last_d = nil
 			return "success"
 		end
@@ -73,11 +73,11 @@ bt.register_action("TryApproach", {
 		node.last_d = nil
 
 		if data.targetPos ~= nil then
-			print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
+			-- debug -- print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
 			data.mob.destination = data.targetPos
 			data.mob.approachDistance = node.dist
 		else 
-			print("Approach: targetPos is nil")
+			-- debug -- print("Approach: targetPos is nil")
 		end
 	end,
 	
@@ -97,10 +97,10 @@ bt.register_action("FindPath", {
 		
 		local d = distance(data.pos, data.targetPos)
 		
-		print("dist: "..d)
+		-- debug -- print("dist: "..d)
 		
 		if d <= .1 then
-			print("arrived at target")
+			-- debug -- print("arrived at target")
 			return "success"
 		end
 		
@@ -114,7 +114,7 @@ bt.register_action("FindPath", {
 			
 			data.mob.path = path
 		else 
-			print("FindPath: targetPos is nil")
+			-- debug -- print("FindPath: targetPos is nil")
 		end
 	end,
 	
