@@ -107,7 +107,7 @@ local lumberjack = function()
 			
                                   
 			bt.WaitTicks(1),
-			bt.Print("end of loop \n"),
+			--bt.Print("end of loop \n"),
 		}))
 	})
 end
@@ -129,14 +129,14 @@ local fence_region = function(item)
 				bt.WaitTicks(1),
 			}))),
 			
-			bt.Print("end of loop"),
+			--bt.Print("end of loop"),
 		})))
 	})
 end
 
 local wander_around = function(dist) 
 	return bt.Sequence("wander", {
-		bt.Print("wandering"),
+		--bt.Print("wandering"),
 		bt.RandomDirection(),
 		bt.MoveInDirection(dist),
 		--bt.Animate("walk"),
@@ -413,7 +413,7 @@ local quarry = function(item)
 			
 			bt.WaitTicks(1),
 			
-			bt.Print("end of loop"),
+			--bt.Print("end of loop"),
 		}))
 	})
 end

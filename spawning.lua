@@ -8,6 +8,7 @@ minetest.register_abm({
 	nodenames = {
 		"default:dirt", 
 		"default:dirt_with_grass", 
+		"default:dirt_with_dry_grass", 
 		"seasons:spring_default_dirt_with_grass",
 		"seasons:fall_default_dirt_with_grass",
 		"seasons:winter_default_dirt_with_grass",
@@ -17,19 +18,19 @@ minetest.register_abm({
 		"default:silver_sand",
 	},
 	neighbors = {"air"},
-	interval = 2,
-	chance = 10,
+	interval = 20,
+	chance = 100,
 	catch_up = false,
 
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		if active_object_count_wider > 0 then
-			--print("too many local objs")
+		if active_object_count > 15 then
+			--print("too many local objs " .. active_object_count)
 			return
 		end
 		
-		local nearobjs = minetest.get_objects_inside_radius(pos, 10)
-		if #nearobjs > 5 then
-		--	print("too many near objs")
+		local nearobjs = minetest.get_objects_inside_radius(pos, 30)
+		if #nearobjs > 4 then
+			--print("too many near objs")
 			return
 		end
 		
