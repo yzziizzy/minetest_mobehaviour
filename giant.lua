@@ -483,7 +483,7 @@ end
 
 
 
-
+--[[
 make_wolf("wolf", function() 
 	return wander_around(6)
 end)
@@ -498,6 +498,7 @@ end)
 make_bear("bear", function() 
 	return wander_around(6)
 end)
+]]
 
 make_NPC("npc", function() 
 	return wander_around(6)

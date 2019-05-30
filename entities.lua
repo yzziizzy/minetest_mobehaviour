@@ -26,8 +26,8 @@ function make_bunny(name, behavior_fn)
 		view_range = 15,
 		floats = 0,
 		drops = {
-			{name = "mobs:meat_raw",
-			chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 2},
+			{name = "fur:small_pelt", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -88,8 +88,8 @@ function make_wolf(name, behavior_fn)
 		view_range = 25,
 		floats = 1,
 		drops = {
-			{name = "mobs:meat_raw",
-			chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 1},
+			{name = "fur:medium_pelt", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -151,7 +151,7 @@ function make_bear(name, behavior_fn)
 		view_range = 25,
 		floats = 1,
 		drops = {
-			{name = "mobs:meat_raw",
+			{name = "mobehavior:meat_raw",
 			chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
@@ -213,8 +213,7 @@ function make_rat(name, behavior_fn)
 		view_range = 15,
 		floats = 1,
 		drops = {
-			{name = "mobs:meat_raw",
-			chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -239,7 +238,8 @@ end
 
 function make_NPC(name, behavior_fn) 
 
-	mobs:register_simple_mob(mn..":"..name, {
+-- 	mobs:register_simple_mob(mn..":"..name, {
+	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "monster",
 		passive = false,
 		attack_type = "dogfight",

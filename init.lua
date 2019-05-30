@@ -37,9 +37,13 @@ minetest.register_on_shutdown(saveModData)
 
 -- Mob Api
 
+-- new api from scratch
+dofile(path.."/api_fast.lua")
+
+dofile(path.."/meat.lua")
 dofile(path.."/api.lua")
 dofile(path.."/behavior.lua")
-dofile(path.."/simple_api.lua")
+-- dofile(path.."/simple_api.lua")
 
 
 dofile(path.."/scripts/init.lua")

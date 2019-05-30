@@ -177,20 +177,25 @@ function update_tag(self)
 end
 
 -- check if mob is dead or only hurt
-function check_for_death(self)
-
+function check_for_death(self, pos2)
 	-- return if no change
 	local hp = self.object:get_hp()
-
-	if hp == self.health then
-		return false
+ hp.foo.bar(x)
+	if pos2 == nil then
+		print("pos2 is nil. api.lua:185")
+		return
 	end
 
+	if hp == self.health then
+		--print("no damage")
+		return false
+	end
+print("got damage")
 	local pos = self.object:getpos()
 
 	-- still got some health? play hurt sound
 	if hp > 0 then
-
+		print("not dead: " .. hp)
 		self.health = hp
 
 		if self.sounds.damage then
@@ -209,22 +214,25 @@ function check_for_death(self)
 
 	-- drop items when dead
 	local obj
-
+print("mob died")
 	for _,drop in pairs(self.drops) do
-
+print("dropping: " .. drop.name)
 		if math.random(1, drop.chance) == 1 then
-
-			obj = minetest.add_item(pos,
+print("doing drop at "..pos.x..", "..pos.y..", "..pos.z)
+print("doing drop2 at "..pos2.x..", "..pos2.y..", "..pos2.z)
+			obj = minetest.add_item(pos2,
 				ItemStack(drop.name .. " "
 					.. math.random(drop.min, drop.max)))
 
 			if obj then
-
+print("drop successful")
 				obj:setvelocity({
 					x = math.random(-1, 1),
 					y = 6,
 					z = math.random(-1, 1)
 				})
+			else
+				print("failed to add item")
 			end
 		end
 	end

@@ -13,6 +13,7 @@ end
 
 -- register mob function
 function mobs:register_simple_mob(name, def)
+print("bad bad")
 --[[
 	local btdata = {
 		waypoints= {},
@@ -201,8 +202,8 @@ minetest.register_entity(name, {
 						self.object:set_hp(self.object:get_hp() - math.floor(d - 5))
 
 						effect(pos, 5, "tnt_smoke.png")
-
-						if check_for_death(self) then
+						print("death by falling")
+						if check_for_death(self, pos) then
 							return
 						end
 					end
@@ -328,7 +329,7 @@ minetest.register_entity(name, {
 	end,
 
 	on_punch = function(self, hitter, tflp, tool_capabilities, dir)
-
+		print("got punched !!!!")
 		-- weapon wear
 		local weapon = hitter:get_wielded_item()
 		local punch_interval = 1.4
@@ -359,12 +360,18 @@ minetest.register_entity(name, {
 				max_hear_distance = 5
 			})
 		end
-
+local hp = self.object:get_hp()
+		
+		local pos = self.object:getpos()
+		print("punched (hp: "..hp..")at "..pos.x..", "..pos.y..", "..pos.z)
+		
+		
 		-- exit here if dead
-		if check_for_death(self) then
+		if check_for_death(self, pos) then
+			print("died from punch")
 			return
 		end
-
+print("didn't die from punch")
 		-- blood_particles
 		if self.blood_amount > 0
 		and not disable_blood then
