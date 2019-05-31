@@ -19,6 +19,28 @@ bt.register_action("Destroy", {
 	end,
 })
 
+bt.register_action("PunchEntity", {
+	tick = function(node, data)
+		-- debug -- print("Punching target entity")
+		if data.targetEntity == nil then 
+			return "failed" 
+		end
+		
+		-- too far away
+		if distance3(data.targetEntity:getpos(), data.pos) > data.mob.reach then
+			return "failed"
+		end
+		
+		--print(dump(data.targetEntity))
+		data.targetEntity:punch(data.mob.object, 1.0, {
+			full_punch_interval = 1.0,
+			damage_groups = {fleshy = data.mob.damage}
+		}, nil)
+		
+		return "success"
+	end,
+})
+
 
 
 
@@ -78,6 +100,32 @@ bt.register_action("SetNode", {
 		end
 		return { 
 			sel = sel 
+		} 
+	end,
+})
+
+
+
+bt.register_action("SetNodeWallmounted", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		minetest.set_node(data.targetPos, node.sel)
+		
+		return "success"
+	end,
+	
+	ctor = function(sel, dir)
+		if type(sel) == "string" then
+			sel = {name = sel}
+		end
+		
+		sel.param2 = minetest.dir_to_wallmounted(dir)
+		
+		return { 
+			sel = sel,
 		} 
 	end,
 })

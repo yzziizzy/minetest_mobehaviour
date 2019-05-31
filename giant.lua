@@ -5,7 +5,7 @@ farmer
 crafter
 guards (need weapons)
 
-fix lumberjack stuck on trees
+fix lumberjack stuck on tall trees
 
 torches
 moat
@@ -243,6 +243,9 @@ end
 local wolf_root = function() 
 	return bt.Sequence("wolf", {
 		
+		bt.FindPlayerNear(20),
+		bt.Approach(1.2),
+		bt.Animate("punch"),
 		-- FindEntityNear
 		-- ApproachEntity
 		-- Attack
@@ -310,23 +313,71 @@ local build_house = function(item)
 		bt.SetWaypoint("house"),
 		bt.FindRegionAround(3),
 		
+		-- clear the area
+		bt.ScaleRegion({x=1, y=0, z=1}),
+		
 		bt.MoveRegion({x=0, y=1, z=0}),
-		btu.fill_region({name="default:cobble"}),
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		
+		-- move the region back
+		bt.MoveRegion({x=0, y=-5, z=0}),
+		bt.ScaleRegion({x=-1, y=0, z=-1}),
+		
+ 		btu.fill_region({name="default:cobble"}),
 	
-	
+		-- door
 		bt.GetWaypoint("house"),
 		bt.MoveTarget({x=3, y=2, z=0}),
 		bt.SetNode({name="doors:hidden"}),
 		bt.MoveTarget({x=0, y=-1, z=0}),
 		bt.SetNode({name="doors:door_wood_b"}),
+		
+		-- steps
+		bt.MoveTarget({x=1, y=-1, z=0}),
+		bt.SetNode({name="stairs:slab_cobble"}),
+		bt.MoveTarget({x=0, y=0, z=1}),
+		bt.SetNode({name="stairs:slab_cobble"}),
+		bt.MoveTarget({x=0, y=0, z=-2}),
+		bt.SetNode({name="stairs:slab_cobble"}),
 	
-	
+		-- walls
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fence_region({name="default:tree"}),
 
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fence_region({name="default:tree"}),
 		
+		-- outside torches
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=4, y=2, z=1}),
+		bt.SetNodeWallmounted({name="default:torch_wall"}, {x=-1, y=0, z=0}),
+		bt.MoveTarget({x=0, y=0, z=-2}),
+		bt.SetNodeWallmounted({name="default:torch_wall"}, {x=-1, y=0, z=0}),
+		
+		-- inside torches
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=-2, y=2, z=0}),
+		bt.SetNodeWallmounted({name="default:torch_wall"}, {x=-1, y=0, z=0}),
+		
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=0, y=2, z=2}),
+		bt.SetNodeWallmounted({name="default:torch_wall"}, {x=0, y=0, z=1}),
+		
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=0, y=2, z=-2}),
+		bt.SetNodeWallmounted({name="default:torch_wall"}, {x=0, y=0, z=-1}),
+		
+		-- roof
 		bt.ScaleRegion({x=-1, y=0, z=-1}),
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fence_region({name="default:wood"}),
@@ -335,6 +386,15 @@ local build_house = function(item)
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fill_region({name="default:wood"}),
 		
+		-- over the door
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=3, y=3, z=-1}),
+		bt.SetNode({name="default:wood"}),
+		bt.MoveTarget({x=0, y=0, z=1}),
+		bt.SetNode({name="default:wood"}),
+		bt.MoveTarget({x=0, y=0, z=1}),
+		bt.SetNode({name="default:wood"}),
+
 
 		
 		bt.Die(),
@@ -536,6 +596,24 @@ local build_walls = function(what)
 	})
 end
 
+local attack_player = function() 
+	return bt.Sequence("", {
+		-- find a player and attack them, forever
+		
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("chop tree", {
+			bt.FindPlayerNear(50),
+			bt.Approach(1.1),
+
+			bt.Animate("punch"),
+			bt.PunchEntity(),
+			bt.WaitTicks(1),
+		}))),
+	
+		bt.WaitTicks(3),
+	})
+end
+
 
 
 
@@ -566,6 +644,7 @@ end)
 make_NPC("npc", function() 
 -- 	return wander_around(6)
 -- 	return bare_lumberjack()
-	return build_house()
+ 	return build_house()
+-- 	return attack_player()
 end)
 

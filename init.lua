@@ -35,6 +35,12 @@ end
 minetest.register_on_shutdown(saveModData)
 
 
+
+function vcopy(p) 
+	return {x=p.x, y=p.y, z=p.z}
+end
+
+
 -- Mob Api
 
 -- new api from scratch

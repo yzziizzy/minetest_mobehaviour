@@ -62,22 +62,25 @@ end
 btu.dig_region = function(item)
 	return bt.Sequence("", {
 
-		bt.Invert(bt.UntilFailed(bt.Sequence("dig the hole", {
-			
-			bt.FindNodeInRange(item),
-			bt.Approach(2),
-			
-			-- chop it down
+-- 		bt.Invert(bt.UntilFailed(bt.Sequence("dig the hole", {
+-- 			
+-- -- 			bt.FindNodeInRange(),
+-- -- 			bt.Approach(2),
+-- 			
+-- 			-- chop it down
 			bt.Invert(bt.UntilFailed(bt.Sequence("dig hole", {
-				bt.FindNodeInRange(item),
+				bt.Print("before walk"),
+				bt.WalkNonEmptyNodesInRange(),
+				bt.Print("after walk"),
+				
 				bt.Approach(3),
 				bt.Animate("punch"),
 				bt.DigNode(),
 				bt.WaitTicks(1),
 			}))),
 			
-			bt.Print("end of loop"),
-		})))
+-- 			bt.Print("end of loop"),
+-- 		})))
 	})
 end
 

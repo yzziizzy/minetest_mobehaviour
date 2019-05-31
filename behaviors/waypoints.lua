@@ -40,8 +40,14 @@ bt.register_action("GetWaypoint", {
 		if data.waypoints[node.wpname] == nil then
 			return "failed"
 		end
+		
+		local wp = data.waypoints[node.wpname]
 	
-		data.targetPos = data.waypoints[node.wpname]
+		data.targetPos = {
+			x = wp.x,
+			y = wp.y,
+			z = wp.z,
+		}
 		return "success"
 	end,
 	
@@ -83,7 +89,13 @@ bt.register_action("GetGroupWaypoint", {
 			return "failed"
 		end
 	
-		data.targetPos = mobehavior.groupData[data.groupID].waypoints[node.wpname]
+		local wp = mobehavior.groupData[data.groupID].waypoints[node.wpname]
+		
+		data.targetPos = {
+			x = wp.x,
+			y = wp.y,
+			z = wp.z,
+		}
 		return "success"
 	end,
 	

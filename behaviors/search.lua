@@ -302,6 +302,38 @@ bt.register_action("FindItemNear", {
 	end,
 })
 
+ 
+bt.register_action("FindPlayerNear", {
+	tick = function(node, data)
+		
+		if data.targetPos == nil and data.targetEntity == nil then
+			return "failed"
+		end
+		
+		return "success"
+	end,
+	
+	reset = function(node, data)
+		data.targetPos = nil
+		data.targetEntity = nil
+	
+		local objects = minetest.get_objects_inside_radius(data.pos, node.dist)
+		for _,object in ipairs(objects) do
+			--tprint(object:get_luaentity())
+			if object:is_player() then
+				data.targetPos = object:getpos()
+				data.targetEntity = object
+			end
+		end
+	end,
+	
+	ctor = function(dist)
+		return {
+			dist = dist,
+		}
+	end,
+})
+
 
 
 bt.register_action("AddToVisited", {

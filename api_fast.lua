@@ -12,6 +12,7 @@ function mobehavior:register_mob_fast(name, def)
 		hp_max = 1,
 		health = 1,
 		rotate = 0,
+		reach = 3,
 		physical = true,
 		weight = 5,
 		jump_height = 6,
@@ -135,6 +136,7 @@ function mobehavior:register_mob_fast(name, def)
 					self.destination = nil
 					self.walk_timer = 0
 					
+					-- TODO: make sure this doesn't lead to infinite loops
 					-- bump bttimer to get new directions
 					self.bt_timer = 99
 					
@@ -289,6 +291,7 @@ function mobehavior:register_mob_fast(name, def)
 			if self.btData ~= nil then
 				self.btData.inv = nil -- just in case
 				self.btData.mob = nil -- just in case
+				self.btData.targetEntity = nil -- just in case
 			end
 			
 

@@ -41,6 +41,140 @@ bt.register_action("FindNodeInRange", {
 		}
 	end,
 })
+ 
+bt.register_action("WalkAllNodesInRange", {
+	tick = function(node, data)
+		
+		if data.region == nil or node.regionEmpty == true then 
+			print("could not find node in active range")
+			return "failed" 
+		end
+
+		if not node.initialized then 
+			node.cur_pos = vcopy(data.region.min)
+			data.targetPos = vcopy(node.cur_pos)
+			node.done = false
+			node.initialized = true
+			
+			return "success"
+		end
+		
+		if node.done then 
+			node.initialized = false
+			return "failed"
+		end
+		
+		data.targetPos = vcopy(node.cur_pos)
+		
+		node.cur_pos.x = node.cur_pos.x + 1
+		if node.cur_pos.x > data.region.max.x then
+			node.cur_pos.x = data.region.min.x
+			node.cur_pos.z = node.cur_pos.z + 1
+
+			if node.cur_pos.z > data.region.max.z then
+				node.cur_pos.z = data.region.min.z
+				node.cur_pos.y = node.cur_pos.y + 1
+			
+				if node.cur_pos.y > data.region.max.y then
+					node.done = true
+				end
+			end
+-- 		else
+-- 			print("normal walk " .. node.cur_pos.x .. ","..node.cur_pos.y..","..node.cur_pos.z)
+		end
+		
+		return "success"
+	end,
+		
+	ctor = function(sel)
+		return {
+			sel = sel,
+			regionEmpty = false,
+			cur_pos = {x=0, y=0, z=0},
+			done = false,
+			initialized = false,
+		}
+	end,
+})
+
+
+bt.register_action("WalkNonEmptyNodesInRange", {
+	tick = function(node, data)
+		
+		if data.region == nil or node.regionEmpty == true then 
+			print("could not find node in active range")
+			return "failed" 
+		end
+
+		if not node.initialized then 
+			node.cur_pos = vcopy(data.region.min)
+			node.done = false
+			node.initialized = true
+		end
+		
+		if node.done then 
+			node.initialized = false
+			return "failed"
+		end
+		
+		
+		local found = false
+		while not node.done and not found do
+			
+			local n = minetest.get_node(node.cur_pos)
+			if n and n.name ~= "air" and n.name ~= "ignore" then
+				found = true
+				break
+			end
+		
+			node.cur_pos.x = node.cur_pos.x + 1
+			if node.cur_pos.x > data.region.max.x then
+				node.cur_pos.x = data.region.min.x
+				node.cur_pos.z = node.cur_pos.z + 1
+
+				if node.cur_pos.z > data.region.max.z then
+					node.cur_pos.z = data.region.min.z
+					node.cur_pos.y = node.cur_pos.y + 1
+
+					if node.cur_pos.y > data.region.max.y then
+						node.done = true
+					end
+				end
+-- 			else
+-- 				print("normal walk " .. node.cur_pos.x .. ","..node.cur_pos.y..","..node.cur_pos.z)
+			end
+			
+		
+		
+		end
+		
+		if not found then
+			return "failed"
+		end
+		
+		data.targetPos = vcopy(node.cur_pos)
+		
+		return "success"
+	end,
+	
+	reset = function(node, data)
+		local r = data.region;
+		if r == nil then -- game restarts cause this
+			return
+		end
+		
+	end,
+	
+	ctor = function(sel)
+		return {
+			sel = sel,
+			regionEmpty = false,
+			cur_pos = {x=0, y=0, z=0},
+			done = false,
+			initialized = false,
+		}
+	end,
+})
 
 
 bt.register_action("FindPerimeterNodeInRegion", {

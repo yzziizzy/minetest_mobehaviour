@@ -22,6 +22,15 @@ function distance(a, b)
 	return math.abs(math.sqrt(x*x + z*z))
 end
 
+--  3d distance
+function distance3(a, b) 
+	local x = a.x - b.x
+	local y = a.y - b.y
+	local z = a.z - b.z
+	
+	return math.abs(math.sqrt(x*x + z*z + y*y))
+end
+
 
 
 function tprint (tbl, indent)
