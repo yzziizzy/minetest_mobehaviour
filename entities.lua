@@ -1,7 +1,7 @@
 
 function make_bunny(name, behavior_fn) 
 
-	mobs:register_simple_mob(mn..":"..name, {
+	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
 		passive = true,
 		reach = 1,
@@ -62,7 +62,7 @@ end
 
 function make_wolf(name, behavior_fn) 
 
-	mobs:register_simple_mob(mn..":"..name, {
+	mobehavior:register_mob_fast(mn..":"..name, {
 		
 		type = "animal",
 		passive = false,
@@ -74,7 +74,7 @@ function make_wolf(name, behavior_fn)
 		visual = "mesh",
 		mesh = "animal_wolf.b3d",
 		drawtype = "front",
-		rotate = 270,
+ 		rotate = math.pi / -2,
 		textures = {
 			{"animal_wolf_mesh.png"},
 			{"animal_wolf_tamed_mesh.png"},
@@ -124,7 +124,7 @@ end
 
 function make_bear(name, behavior_fn) 
 
-	mobs:register_simple_mob(mn..":"..name, {
+	mobehavior:register_mob_fast(mn..":"..name, {
 		
 		type = "animal",
 		passive = false,
@@ -137,7 +137,7 @@ function make_bear(name, behavior_fn)
 		mesh = "mob_bear.b3d",
 		drawtype = "front",
 		visual_size= {x=3,y=3,z=3},
-		rotate = 270,
+		rotate = math.pi / -2,
 		textures = {
 			{"mob_bear_bear_mesh.png"},
 		--	{"mob_bear_bear_tamed_mesh.png"}, -- has a harness
@@ -187,7 +187,7 @@ end
 
 function make_rat(name, behavior_fn) 
 
-	mobs:register_simple_mob(mn..":"..name, {
+	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
 		passive = true,
 		reach = 1,

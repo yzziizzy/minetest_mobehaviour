@@ -37,7 +37,7 @@ minetest.register_abm({
 		--print("----------spawning rat")
 		local p = minetest.find_node_near(pos, 3, "air")
 		if p then
-			local mob = minetest.add_entity(p, "mobehavior:rat")
+-- 			local mob = minetest.add_entity(p, "mobehavior:rat")
 		end
 	end
 })
@@ -108,7 +108,7 @@ minetest.register_abm({
 		--print("----------spawning rat")
 		local p = minetest.find_node_near(pos, 3, "air")
 		if p then
-			local mob = minetest.add_entity(p, "mobehavior:bunny")
+-- 			local mob = minetest.add_entity(p, "mobehavior:bunny")
 		end
 	end
 })

@@ -112,6 +112,59 @@ local lumberjack = function()
 	})
 end
 
+local bare_lumberjack = function() 
+	return bt.Sequence("", {
+		
+		-- build a chest and remember where it is
+		bt.FindSpotOnGround(),
+		bt.Approach(2),
+		bt.SetNode({name="default:chest"}),
+-- 		bt.GetGroupWaypoint("lumber_chest"),
+		bt.SetWaypoint("chest"),
+		
+		bt.UntilFailed(bt.Sequence("logs some trees", {
+			
+			-- find a tree
+			bt.Selector("find a tree", {
+				bt.Sequence("find a tree near the last one", {
+					bt.GetWaypoint("tree"),
+					bt.FindNodeNear({"group:tree"}, 15),
+				}),
+				bt.FindNodeNear({"group:tree"}, 50),
+			}),
+			bt.Approach(2),
+			
+			-- chop it down
+			bt.Invert(bt.UntilFailed(bt.Sequence("chop tree", {
+				bt.Wield("default:axe_steel"),
+				bt.Animate("punch"),
+				bt.FindNodeNear({"group:tree"}, 3), -- gets stuck on aspen and jungle
+				bt.DigNode(),
+				bt.WaitTicks(1),
+			}))),
+			bt.SetWaypointHere("tree"),
+
+			bt.Wield(""),
+
+			
+			bt.Succeed(bt.Sequence("pick up saplings", {
+				--bt.FindItemNear("group:sapling", 20),
+				bt.PickUpNearbyItems("group:sapling", 5),
+			})),
+			
+			
+			-- put wood in chest
+			bt.GetWaypoint("chest"),
+			bt.Approach(2),
+			bt.PutInChest(nil),
+			
+                                  
+			bt.WaitTicks(1),
+			--bt.Print("end of loop \n"),
+		}))
+	})
+end
+
 local fence_region = function(item)
 	return bt.Sequence("", {
 
@@ -483,7 +536,7 @@ end
 
 
 
---[[
+
 make_wolf("wolf", function() 
 	return wander_around(6)
 end)
@@ -498,9 +551,10 @@ end)
 make_bear("bear", function() 
 	return wander_around(6)
 end)
-]]
+
 
 make_NPC("npc", function() 
-	return wander_around(6)
+-- 	return wander_around(6)
+	return bare_lumberjack()
 end)
 
