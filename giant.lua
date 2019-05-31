@@ -26,6 +26,28 @@ approach with timeout/stuck fn
 
 
 
+btu.fence_region = function(item)
+	return bt.Sequence("", {
+
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			
+			bt.FindPerimeterNodeInRegion({"air"}),
+			bt.Approach(2),
+			
+			-- chop it down
+			bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+				bt.FindPerimeterNodeInRegion({"air"}),
+				bt.Approach(3),
+				bt.Animate("punch"),
+				bt.SetNode(item);
+				bt.WaitTicks(1),
+			}))),
+			
+			--bt.Print("end of loop"),
+		})))
+	})
+end
+
 
 local forager = function() 
 	local food_items = {
@@ -165,28 +187,6 @@ local bare_lumberjack = function()
 	})
 end
 
-local fence_region = function(item)
-	return bt.Sequence("", {
-
-		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
-			
-			bt.FindPerimeterNodeInRegion({"air"}),
-			bt.Approach(2),
-			
-			-- chop it down
-			bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
-				bt.FindPerimeterNodeInRegion({"air"}),
-				bt.Approach(3),
-				bt.Animate("punch"),
-				bt.SetNode(item);
-				bt.WaitTicks(1),
-			}))),
-			
-			--bt.Print("end of loop"),
-		})))
-	})
-end
-
 local wander_around = function(dist) 
 	return bt.Sequence("wander", {
 		--bt.Print("wandering"),
@@ -303,7 +303,7 @@ end
 
 local build_house = function(item) 
 	return bt.Sequence("", {
-		bt.Succeed(bt.FindGroupCampfire()),
+-- 		bt.Succeed(bt.FindGroupCampfire()),
 	
 		-- find a place for a hole
 		bt.FindSpotOnGround(),
@@ -312,7 +312,15 @@ local build_house = function(item)
 		
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fill_region({name="default:cobble"}),
-		
+	
+	
+		bt.GetWaypoint("house"),
+		bt.MoveTarget({x=3, y=2, z=0}),
+		bt.SetNode({name="doors:hidden"}),
+		bt.MoveTarget({x=0, y=-1, z=0}),
+		bt.SetNode({name="doors:door_wood_b"}),
+	
+	
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fence_region({name="default:tree"}),
 
@@ -321,11 +329,13 @@ local build_house = function(item)
 		
 		bt.ScaleRegion({x=-1, y=0, z=-1}),
 		bt.MoveRegion({x=0, y=1, z=0}),
-		btu.fill_region({name="default:wood"}),
+		btu.fence_region({name="default:wood"}),
 
 		bt.ScaleRegion({x=-1, y=0, z=-1}),
 		bt.MoveRegion({x=0, y=1, z=0}),
 		btu.fill_region({name="default:wood"}),
+		
+
 		
 		bt.Die(),
 	})
@@ -555,6 +565,7 @@ end)
 
 make_NPC("npc", function() 
 -- 	return wander_around(6)
-	return bare_lumberjack()
+-- 	return bare_lumberjack()
+	return build_house()
 end)
 

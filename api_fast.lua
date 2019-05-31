@@ -50,7 +50,7 @@ function mobehavior:register_mob_fast(name, def)
 				btdata.yaw = yaw
 				btdata.mob = self
 				
-				print("\n<<< start >>>")
+				print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
 					
 				-- inventories cannot be serialized and cause the game to crash if
 				-- placed in the entity's table

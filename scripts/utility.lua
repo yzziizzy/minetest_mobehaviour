@@ -113,7 +113,6 @@ btu.fill_region = function(item)
 			bt.FindNodeInRange({"air"}),
 			bt.Approach(2),
 			
-			-- chop it down
 			bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
 				bt.FindNodeInRange({"air"}),
 				bt.Approach(3),
@@ -126,3 +125,5 @@ btu.fill_region = function(item)
 		})))
 	})
 end
+
+
