@@ -733,7 +733,7 @@ local mineshaft = function(depth)
 end
 
 
-local minetunnel = function(height, length, direction) 
+local minetunnel = function(height, length, dir) 
 	return bt.Sequence("", {
 	
 		bt.MoveHere(),
@@ -746,24 +746,26 @@ local minetunnel = function(height, length, direction)
 			bt.MoveTarget({x=0, y=height, z=0}),
 			
 			-- ceiling
-			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=-1}),
- 			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=1}),
+			bt.SetNodeRel("default:stonebrick", {x=-1*dir.z, y=1, z=-1*dir.x}),
+ 			bt.SetNodeRel("default:stonebrick", {x=0*dir.z, y=1, z=0*dir.x}),
+ 			bt.SetNodeRel("default:stonebrick", {x=1*dir.z, y=1, z=1*dir.x}),
 --  			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=0}),
 			
 			btu.dig_stack(height),
- 			bt.MoveTarget({x=0, y=0, z=1}),
+ 			bt.MoveTarget({x=1*dir.z, y=0, z=1*dir.x}),
 			btu.dig_stack(height),
-			bt.MoveTarget({x=0, y=0, z=-2}),
+			bt.MoveTarget({x=-2*dir.z, y=0, z=-2*dir.x}),
 			btu.dig_stack(height),
-			bt.MoveTarget({x=0, y=-height, z=1}),
+			bt.MoveTarget({x=1*dir.z, y=-height, z=1*dir.x}),
 			
 			-- torches 
 			bt.Succeed(bt.Sequence("mine walls", {
 				bt.Counter("mineshaft", "mod=0", 4), 
-				bt.SetNodeRelWallmounted("default:torch_wall", {x=0, y=2, z=-1}, {x=0, y=0, z=-1}),
+-- 				bt.SetNodeRelWallmounted("default:torch_wall", {x=-1*dir.z, y=2, z=-1*dir.x}, {x=-1*dir.z, y=0, z=-1*dir.x}),
+				bt.SetNodeRelWallmounted("default:torch", {x=0, y=height, z=0}, {x=0, y=1, z=0}),
 			})),
 			
-			bt.MoveTarget({x=1, y=0, z=0}),
+			bt.MoveTarget({x=dir.x, y=0, z=dir.z}),
 			bt.Approach(1),
 			
 			bt.Counter("mineshaft", "inc"), 
@@ -773,6 +775,125 @@ local minetunnel = function(height, length, direction)
 		bt.Die(),
 	})
 end
+
+
+
+local mine_room = function(height, length, width, dir) 
+	return bt.Sequence("", {
+		
+		bt.MoveHere(),
+		bt.FindSurface(),
+		bt.Approach(1),
+	
+		
+		-- in this usage, x is along the length and width is perpendicular
+		
+		-- do the right half of the room first
+		bt.Counter("mineroom_y", "set", 0),
+		bt.Invert(bt.UntilFailed(bt.Sequence("dig mineshaft", {
+			
+			bt.Counter("mineroom_x", "set", 0),
+			bt.Invert(bt.UntilFailed(bt.Sequence("dig mineshaft", {
+				
+				bt.Approach(2),
+				
+				bt.MoveTarget({x=0, y=height, z=0}),
+				btu.dig_stack(height),
+				
+				-- ceiling
+				bt.SetNodeRel("default:stonebrick", {x=0, y=1, z=0}),
+				
+				-- fill gaps in the floor
+				bt.PushTarget(),
+				bt.Succeed(bt.Sequence("mine floor", {
+					bt.MoveTarget({x=0, y=-height, z=0}),
+					bt.IsNode("air"),
+					bt.SetNode("default:brick"),
+				})),
+				bt.PopTarget(),
+				
+				-- torches
+				bt.Succeed(bt.Sequence("mine walls", {
+					bt.Counter("mineroom_x", "mod=0", 4), 
+					bt.Counter("mineroom_y", "mod=0", 4), 
+					bt.SetNodeRelWallmounted("default:torch", {x=0, y=0, z=0}, {x=0, y=1, z=0}),
+				})),
+				
+				bt.MoveTarget({x=dir.x, y=-height, z=dir.z}),
+				
+			
+				bt.Counter("mineroom_x", "inc"), 
+				bt.Counter("mineroom_x", "lt", length),
+			}))),
+			
+			bt.MoveTarget({x=dir.x*-length, y=0, z=dir.z*-length}),
+			bt.MoveTarget({x=dir.z*1, y=0, z=dir.x*1}),
+			
+			bt.Counter("mineroom_y", "inc"), 
+			bt.Counter("mineroom_y", "lt", width/2),
+		}))),
+		
+		
+		-- reset to the middle
+		bt.MoveTarget({x=dir.z*(-width/2), y=0, z=dir.x*(-width/2)}),
+		
+		
+		-- now the other half
+		bt.Counter("mineroom_y", "set", 0),
+		bt.Invert(bt.UntilFailed(bt.Sequence("dig mineshaft", {
+			
+			bt.Counter("mineroom_x", "set", 0),
+			bt.Invert(bt.UntilFailed(bt.Sequence("dig mineshaft", {
+				
+				bt.Approach(2),
+				
+				bt.MoveTarget({x=0, y=height, z=0}),
+				btu.dig_stack(height),
+				
+				-- ceiling
+				bt.SetNodeRel("default:stonebrick", {x=0, y=1, z=0}),
+				
+				-- fill gaps in the floor
+				bt.PushTarget(),
+				bt.Succeed(bt.Sequence("mine floor", {
+					bt.MoveTarget({x=0, y=-height, z=0}),
+					bt.IsNode("air"),
+					bt.SetNode("default:brick"),
+				})),
+				bt.PopTarget(),
+				
+				-- torches
+				bt.Succeed(bt.Sequence("mine walls", {
+					bt.Counter("mineroom_x", "mod=0", 4), 
+					bt.Counter("mineroom_y", "mod=0", 4), 
+					bt.SetNodeRelWallmounted("default:torch", {x=0, y=0, z=0}, {x=0, y=1, z=0}),
+				})),
+				
+				bt.MoveTarget({x=dir.x, y=-height, z=dir.z}),
+				
+			
+				bt.Counter("mineroom_x", "inc"), 
+				bt.Counter("mineroom_x", "lt", length),
+			}))),
+			
+			bt.MoveTarget({x=dir.x*-length, y=0, z=dir.z*-length}),
+			bt.MoveTarget({x=dir.z*-1, y=0, z=dir.x*-1}),
+			
+			bt.Counter("mineroom_y", "inc"), 
+			bt.Counter("mineroom_y", "lt", width/2),
+		}))),
+		
+		bt.Die(),
+	})
+end
+
+local found_mine = function(height, length, dir) 
+	return bt.Sequence("", {
+		
+	})
+end
+
+
 
 
 
@@ -799,7 +920,7 @@ make_NPC("npc", function()
 -- 	return wander_around(6)
 -- 	return bare_lumberjack()
 --  	return build_house()
- 	return minetunnel(6, 10)
+ 	return mine_room(4, 5, 10, {x=0, z=1})
 -- 	return attack_player()
 end)
 
