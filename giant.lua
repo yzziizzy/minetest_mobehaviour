@@ -652,22 +652,25 @@ local path_test = function()
 end
 
 
-local mineshaft = function(depth) 
+local mineshaft = function(depth, dir) 
+	local dx = dir.x
+	local dz = dir.z
 	return bt.Sequence("", {
 		
-		bt.FindSpotOnGround(),
-		bt.Approach(1),
+-- 		bt.FindSpotOnGround(),
+		bt.Approach(2),
 		
 		bt.SetWaypoint("mine_entrance"),
 		
-		bt.SetNodeRel("default:stonebrick", {x=-1, y=-1, z=0}),
-		bt.SetNodeRel("default:stonebrick", {x=-1, y=-1, z=1}),
-		bt.SetNodeRel("default:stonebrick", {x=-1, y=-1, z=2}),
-		bt.SetNodeRel("default:stonebrick", {x=-1, y=-1, z=-1}),
-		bt.SetNodeRel("default:stonebrick", {x=-1, y=-1, z=-2}),
-		bt.SetNodeRel("default:stonebrick", {x=-2, y=-1, z=0}),
-		bt.SetNodeRel("default:stonebrick", {x=-2, y=-1, z=1}),
-		bt.SetNodeRel("default:stonebrick", {x=-2, y=-1, z=-1}),
+		bt.SetNodeRel("default:stonebrick", {x=-1*dx + 0*dz, y=-1, z= 0*dx + -1*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-1*dx + 1*dz, y=-1, z= 1*dx + -1*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-1*dx + 2*dz, y=-1, z= 2*dx + -1*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-1*dx +-1*dz, y=-1, z=-1*dx + -1*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-1*dx +-2*dz, y=-1, z=-2*dx + -1*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-2*dx + 0*dz, y=-1, z= 0*dx + -2*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-2*dx + 1*dz, y=-1, z= 1*dx + -2*dz}),
+		bt.SetNodeRel("default:stonebrick", {x=-2*dx +-1*dz, y=-1, z=-1*dx + -2*dz}),
+		
 		
 		bt.MoveTarget({x=0, y=3, z=0}),
 		
@@ -676,47 +679,47 @@ local mineshaft = function(depth)
 			bt.Animate("punch"),
 			
 			-- ceiling
-			bt.SetNodeRel("default:stonebrick", {x=0, y=1, z=-1}),
- 			bt.SetNodeRel("default:stonebrick", {x=0, y=1, z=1}),
- 			bt.SetNodeRel("default:stonebrick", {x=0, y=1, z=0}),
+			bt.SetNodeRel("default:stonebrick", {x=-1*dz, y=1, z=-1*dx}),
+ 			bt.SetNodeRel("default:stonebrick", {x=1*dz, y=1, z=1*dx}),
+ 			bt.SetNodeRel("default:stonebrick", {x=0*dz, y=1, z=0*dx}),
 			
 			
 			btu.dig_stack(5),
- 			bt.MoveTarget({x=0, y=0, z=1}),
+ 			bt.MoveTarget({x=1*dz, y=0, z=1*dx}),
 			btu.dig_stack(5),
-			bt.MoveTarget({x=0, y=0, z=-2}),
+			bt.MoveTarget({x=-2*dz, y=0, z=-2*dx}),
 			btu.dig_stack(5),
-			bt.MoveTarget({x=0, y=0, z=1}),
+			bt.MoveTarget({x=1*dz, y=0, z=1*dx}),
 			
 			-- stairs
-			bt.SetNodeRel("stairs:stair_stonebrick", {x=0, y=-4, z=-1}, {x=-1, z=0}),
- 			bt.SetNodeRel("stairs:stair_stonebrick", {x=0, y=-4, z=1}, {x=-1, z=0}),
- 			bt.SetNodeRel("stairs:stair_stonebrick", {x=0, y=-4, z=0}, {x=-1, z=0}),
+			bt.SetNodeRel("stairs:stair_stonebrick", {x=-1*dz, y=-4, z=-1*dx}, {x=-1*dx, z=-1*dz}),
+ 			bt.SetNodeRel("stairs:stair_stonebrick", {x=1*dz, y=-4, z=1*dx}, {x=-1*dx, z=-1*dz}),
+ 			bt.SetNodeRel("stairs:stair_stonebrick", {x=0*dz, y=-4, z=0*dx}, {x=-1*dx, z=-1*dz}),
 			
 			
 			-- torches 
 			bt.Succeed(bt.Sequence("mine walls", {
 				bt.Counter("mineshaft", "mod=0", 4), 
-				bt.SetNodeRelWallmounted("default:torch_wall", {x=0, y=-2, z=-1}, {x=0, y=0, z=-1}),
+				bt.SetNodeRelWallmounted("default:torch_wall", {x=-1*dz, y=-2, z=-1*dx}, {x=-1*dz, y=0, z=-1*dx}),
 			})),
 			bt.Succeed(bt.Sequence("mine walls", {
 				bt.Counter("mineshaft", "mod=0", 4, 2), 
-				bt.SetNodeRelWallmounted("default:torch_wall", {x=0, y=-2, z=1}, {x=0, y=0, z=1}),
+				bt.SetNodeRelWallmounted("default:torch_wall", {x=1*dz, y=-2, z=1*dx}, {x=1*dz, y=0, z=1*dx}),
 			})),
 			
 			-- walls
 			bt.Succeed(bt.Sequence("mine walls", {
 				bt.Counter("mineshaft", "lt", 6),
 			
-				bt.MoveTarget({x=0, y=1, z=-2}),
+				bt.MoveTarget({x=-2*dz, y=1, z=-2*dx}),
 				btu.fill_buildable_stack("default:stonebrick", 6),
-				bt.MoveTarget({x=0, y=0, z=4}),
+				bt.MoveTarget({x=4*dz, y=0, z=4*dx}),
 				btu.fill_buildable_stack("default:stonebrick", 6),
-				bt.MoveTarget({x=0, y=-1, z=-2}),
+				bt.MoveTarget({x=-2*dz, y=-1, z=-2*dx}),
 			})),
 			
 			
-			bt.MoveTarget({x=1, y=-1, z=0}),
+			bt.MoveTarget({x=1*dx, y=-1, z=1*dz}),
 			
 			bt.Approach(1.1),
 			
@@ -726,9 +729,10 @@ local mineshaft = function(depth)
 			bt.Counter("mineshaft", "lt", depth), 
 		}))),
 		
+		bt.MoveTarget({x=0, y=-4, z=0}),
 		bt.SetWaypoint("mine_exit"),
 		
-		bt.Die(),
+-- 		bt.Die(),
 	})
 end
 
@@ -758,6 +762,11 @@ local minetunnel = function(height, length, dir)
 			btu.dig_stack(height),
 			bt.MoveTarget({x=1*dir.z, y=-height, z=1*dir.x}),
 			
+			-- fill gaps in the floor
+			btu.fill_item_rel_dir("air", "defualt:brick", {x=0, y=0,z= 1}, dir),
+			btu.fill_item_rel_dir("air", "defualt:brick", {x=0, y=0,z= 0}, dir),
+			btu.fill_item_rel_dir("air", "defualt:brick", {x=0, y=0,z=-1}, dir),
+			
 			-- torches 
 			bt.Succeed(bt.Sequence("mine walls", {
 				bt.Counter("mineshaft", "mod=0", 4), 
@@ -781,9 +790,9 @@ end
 local mine_room = function(height, length, width, dir) 
 	return bt.Sequence("", {
 		
-		bt.MoveHere(),
-		bt.FindSurface(),
-		bt.Approach(1),
+-- 		bt.MoveHere(),
+-- 		bt.FindSurface(),
+		bt.Approach(2),
 	
 		
 		-- in this usage, x is along the length and width is perpendicular
@@ -883,13 +892,21 @@ local mine_room = function(height, length, width, dir)
 			bt.Counter("mineroom_y", "lt", width/2),
 		}))),
 		
-		bt.Die(),
+-- 		bt.Die(),
 	})
 end
 
-local found_mine = function(height, length, dir) 
+local found_mine = function(dir) 
 	return bt.Sequence("", {
 		
+		bt.FindSpotOnGround(),
+		
+		mineshaft(10, dir),
+		
+		mine_room(5, 30, 10, dir),
+		
+		
+		bt.Die(),
 	})
 end
 
@@ -920,7 +937,7 @@ make_NPC("npc", function()
 -- 	return wander_around(6)
 -- 	return bare_lumberjack()
 --  	return build_house()
- 	return mine_room(4, 5, 10, {x=0, z=1})
+ 	return found_mine({x=0, z=1})
 -- 	return attack_player()
 end)
 

@@ -9,8 +9,6 @@ end
 
 btu.build_to = function(item) 
 	return bt.Sequence("", {
-	
-	
 		bt.Approach(2),
 		bt.Animate("punch"),
 		bt.SetNode(item),
@@ -215,3 +213,21 @@ end
 
 
 
+btu.fill_item_rel_dir = function(check_item, fill_item, offset, dir)
+	local dx = dir.x
+	local dz = dir.z
+	return bt.Sequence("", {
+		bt.PushTarget(),
+		
+		bt.MoveTarget({
+			x=offset.x*dx + offset.z*dz, 
+			y=offset.y, 
+			z=offset.z*dx + offset.x*dz
+		}),
+		
+		bt.IsNode(check_item),
+		bt.SetNode(fill_item),
+		
+		bt.PopTarget(),
+	})
+end
