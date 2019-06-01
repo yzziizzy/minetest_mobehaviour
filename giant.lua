@@ -726,12 +726,53 @@ local mineshaft = function(depth)
 			bt.Counter("mineshaft", "lt", depth), 
 		}))),
 		
+		bt.SetWaypoint("mine_exit"),
+		
 		bt.Die(),
 	})
 end
 
 
-
+local minetunnel = function(height, length, direction) 
+	return bt.Sequence("", {
+	
+		bt.MoveHere(),
+		bt.FindSurface(),
+		bt.Approach(1),
+	
+		bt.Counter("minetunnel", "set", 0),
+		bt.Invert(bt.UntilFailed(bt.Sequence("dig mineshaft", {
+			
+			bt.MoveTarget({x=0, y=height, z=0}),
+			
+			-- ceiling
+			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=-1}),
+ 			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=1}),
+--  			bt.SetNodeRel("default:stonebrick", {x=0, y=0, z=0}),
+			
+			btu.dig_stack(height),
+ 			bt.MoveTarget({x=0, y=0, z=1}),
+			btu.dig_stack(height),
+			bt.MoveTarget({x=0, y=0, z=-2}),
+			btu.dig_stack(height),
+			bt.MoveTarget({x=0, y=-height, z=1}),
+			
+			-- torches 
+			bt.Succeed(bt.Sequence("mine walls", {
+				bt.Counter("mineshaft", "mod=0", 4), 
+				bt.SetNodeRelWallmounted("default:torch_wall", {x=0, y=2, z=-1}, {x=0, y=0, z=-1}),
+			})),
+			
+			bt.MoveTarget({x=1, y=0, z=0}),
+			bt.Approach(1),
+			
+			bt.Counter("mineshaft", "inc"), 
+			bt.Counter("mineshaft", "lt", length),
+		}))),
+		
+		bt.Die(),
+	})
+end
 
 
 
@@ -758,7 +799,7 @@ make_NPC("npc", function()
 -- 	return wander_around(6)
 -- 	return bare_lumberjack()
 --  	return build_house()
- 	return mineshaft(50)
+ 	return minetunnel(6, 10)
 -- 	return attack_player()
 end)
 

@@ -390,6 +390,17 @@ bt.register_action("FindAreaCorners", {
 
 
 
+bt.register_action("MoveHere", {
+	tick = function(node, data)
+		
+		return "success"
+	end,
+	
+	reset = function(node, data)
+		data.targetPos = data.mob.object:getpos() 
+	end,
+})
+
 bt.register_action("MoveTarget", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
