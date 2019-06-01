@@ -495,6 +495,47 @@ end
 
 
 
+local build_town_walls = function(item, height, size) 
+	return bt.Sequence("", {
+		
+		
+		bt.MoveTarget({x=size/2, y=0, z=size/2}),
+		bt.FindSurface(),
+--  		bt.Approach(1.5),
+		bt.CreatePath("town_wall"),
+-- 		bt.AddPathNode("town_wall"),
+
+		bt.MoveTarget({x=0, y=0, z=-size}),
+		bt.FindSurface(),
+		bt.AddPathNode("town_wall"),
+		
+		bt.MoveTarget({x=-size, y=0, z=0}),
+		bt.FindSurface(),
+		bt.AddPathNode("town_wall"),
+		
+		bt.MoveTarget({x=0, y=0, z=size}),
+		bt.FindSurface(),
+		bt.AddPathNode("town_wall"),
+
+		bt.MoveTarget({x=size, y=0, z=0}),
+		bt.FindSurface(),
+		bt.AddPathNode("town_wall"),
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("build wall", {
+			bt.PointsAlongPath2("town_wall"),
+			
+			bt.FindSurface(),
+			bt.MoveTarget({x=0, y=1, z=0}),
+			bt.Approach(2.5),
+			
+			btu.stack_on_ground(item, height),
+-- 			bt.WaitTicks(1),
+		}))),
+		
+		
+	})
+end
+
 local quarry = function(item) 
 	return bt.Sequence("", {
 		bt.Succeed(bt.FindGroupCampfire()),
@@ -905,6 +946,22 @@ local found_mine = function(dir)
 		
 		mine_room(5, 30, 10, dir),
 		
+		-- set group waypoints
+		-- set chests
+		-- dig tunnels
+		
+		bt.Die(),
+	})
+end
+
+
+
+local create_farm = function(dir) 
+	return bt.Sequence("", {
+		
+		bt.FindSpotOnGround(),
+		
+		
 		
 		bt.Die(),
 	})
@@ -937,7 +994,12 @@ make_NPC("npc", function()
 -- 	return wander_around(6)
 -- 	return bare_lumberjack()
 --  	return build_house()
- 	return found_mine({x=0, z=1})
+--  	return found_mine({x=0, z=1})
+ 	return bt.Sequence("root", {
+		bt.MoveHere(),
+		build_town_walls("default:stonebrick", 1, 5),
+		bt.Die(),
+	})
 -- 	return attack_player()
 end)
 
