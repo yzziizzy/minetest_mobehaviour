@@ -417,6 +417,52 @@ bt.register_action("MoveTarget", {
 	end,
 })
 
+-- finds the first solid node below air in a column
+bt.register_action("FindSurface", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			-- debug -- print("no active target")
+			return "failed" 
+		end
+		
+		return "success"
+	end,
+	
+	reset = function(node, data)
+		if data.targetPos == nil then -- game restarts cause this
+			return
+		end
+		
+		local n = minetest.get_node(data.targetPos)
+		if n.name == "air" then
+			-- search down
+			
+			while n.name == "air" do
+				data.targetPos.y = data.targetPos.y - 1
+				n = minetest.get_node(data.targetPos)
+			end
+			
+		else
+			-- search up
+			
+			while n.name ~= "air" do
+				data.targetPos.y = data.targetPos.y + 1
+				n = minetest.get_node(data.targetPos)
+			end
+			
+			data.targetPos.y = data.targetPos.y - 1
+			
+		end
+		
+	end,
+	
+	ctor = function(scale)
+		return {
+			scale = scale,
+		}
+	end,
+})
+
 
 bt.register_action("MoveTargetRandom", {
 	tick = function(node, data)

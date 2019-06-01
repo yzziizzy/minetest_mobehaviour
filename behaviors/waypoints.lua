@@ -167,5 +167,77 @@ bt.register_action("AddPathNode", {
 	ctor = function(name) return { pname=name or "_" } end,
 })
 
+bt.register_action("PointsAlongPath", {
+	tick = function(node, data)
+		if data.paths[node.pname] == nil then 
+			return "failed" 
+		end
+		
+		local path = data.paths[node.pname]
+		
+		if not node.initialized then 
+			node.cur_pos = vector.round(path[1])
+			node.next_seg = 2
+			node.done = false
+			node.initialized = true
+			node.cur_dist = 0
+			node.dist = distance3(path[1], path[2])
+		end
+		
+		if node.done then 
+			node.initialized = false
+			return "failed"
+		end
+		
+		
+		data.targetPos = vcopy(node.cur_pos)
+		
+		local dir = vector.normalize(
+			vector.subtract(
+				path[node.next_seg], 
+				path[node.next_seg - 1]
+			)
+		)
+		
+		while true do
+			local next_pos = vector.round(
+				vector.add(
+					path[node.next_seg - 1],
+					vector.multiply(dir, node.cur_dist)
+				)
+			)
+			
+			node.cur_dist = node.cur_dist + 1
+			
+			if node.cur_dist - 0.1 > node.dist then
+				if #path <= node.next_seg then
+					node.done = true
+				else
+					node.next_seg = node.next_seg + 1
+					node.cur_dist = 0
+					node.dist = distance3(path[node.next_seg-1], path[node.next_seg])
+				end
+			end
+			
+			if not vector.equals(node.cur_pos, next_pos) then
+				node.cur_pos = next_pos
+				break
+			end
+		end
+		
+		return "success"
+	end,
+	
+	ctor = function(name) 
+		return { 
+			pname=name or "_",
+			cur_pos = {x=0, y=0, z=0},
+			next_seg = 2,
+			done = false,
+			initialized = false,
+		} 
+	end,
+})
+
 
 

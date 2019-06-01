@@ -105,6 +105,64 @@ bt.register_action("SetNode", {
 })
 
 
+bt.register_action("SetNodeRel", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		minetest.set_node(vector.add(data.targetPos, node.off), node.sel)
+		
+		return "success"
+	end,
+	
+	ctor = function(sel, offset, dir)
+		if type(sel) == "string" then
+			sel = {name = sel}
+		end
+		
+		if dir then
+			sel.param2 = minetest.dir_to_facedir(dir)
+		end
+		
+		return { 
+			sel = sel,
+			off = offset,
+			facedir = facedir,
+		} 
+	end,
+})
+
+
+bt.register_action("SetNodeRelWallmounted", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		minetest.set_node(vector.add(data.targetPos, node.off), node.sel)
+		
+		return "success"
+	end,
+	
+	ctor = function(sel, offset, dir)
+		if type(sel) == "string" then
+			sel = {name = sel}
+		end
+		
+		if dir then
+			sel.param2 = minetest.dir_to_wallmounted(dir)
+		end
+		
+		return { 
+			sel = sel,
+			off = offset,
+			facedir = facedir,
+		} 
+	end,
+})
+
+
 
 bt.register_action("SetNodeWallmounted", {
 	tick = function(node, data)
@@ -130,22 +188,6 @@ bt.register_action("SetNodeWallmounted", {
 	end,
 })
 
-bt.register_action("IsNode", {
-	tick = function(node, data)
-		if data.targetPos == nil then 
-			return "failed" 
-		end
-		
-		local n = minetest.get_node(data.targetPos)
-		if n == nil or n.name ~= node.sel then
-			return "failed"
-		end
-		
-		return "success"
-	end,
-	
-	ctor = function(sel) return { sel = sel } end,
-})
 
 
 bt.register_action("ExtinguishFire", {

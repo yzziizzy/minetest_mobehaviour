@@ -1,6 +1,38 @@
  
 
 
+bt.register_action("IsNode", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		local n = minetest.get_node(data.targetPos)
+		if n == nil or n.name ~= node.sel then
+			return "failed"
+		end
+		
+		return "success"
+	end,
+	
+	ctor = function(sel) return { sel = sel } end,
+})
+
+
+bt.register_action("NodeBuildableTo", {
+	tick = function(node, data)
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		local n = minetest.get_node(data.targetPos)
+		if n == nil or not minetest.registered_nodes[n.name].buildable_to then
+			return "failed"
+		end
+		
+		return "success"
+	end,
+})
 
 
 

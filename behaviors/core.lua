@@ -430,16 +430,19 @@ bt.register_action("Counter", {
 			return "failed"
 		elseif node.op == "lte" and data.counters[node.cname] > node.val then
 			return "failed"
+		elseif node.op == "mod=0" and (data.counters[node.cname] + (node.val2 or 0)) % node.val ~= 0 then
+			return "failed"
 		end
 		
 		return "success"
 	end,
 	
-	ctor = function(name, op, val)
+	ctor = function(name, op, val, val2)
 		return {
 			cname = name,
 			op = op,
 			val = val,
+			val2 = val2,
 		}
 	end,
 })

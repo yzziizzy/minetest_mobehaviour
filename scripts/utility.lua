@@ -130,3 +130,88 @@ btu.fill_region = function(item)
 end
 
 
+btu.stack_on_ground = function(item, height)
+	return bt.Sequence("", {
+		bt.PushTarget(),
+		
+		bt.FindSurface(),
+		bt.MoveTarget({x=0, y=1, z=0}),
+		bt.Approach(2),
+		
+		bt.Counter("stacking", "set", height),
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			bt.Animate("punch"),
+			bt.SetNode(item),
+			bt.WaitTicks(1),
+			
+			bt.MoveTarget({x=0, y=1, z=0}),
+			bt.Counter("stacking", "dec"), 
+			bt.Counter("stacking", "gt", 0), 
+		}))),
+		
+		bt.PopTarget(),
+	})
+end
+
+btu.dig_stack = function(height)
+	return bt.Sequence("", {
+		bt.PushTarget(),
+		bt.Counter("stacking", "set", height),
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			bt.Animate("punch"),
+			bt.DigNode(),
+-- 			bt.WaitTicks(1),
+			
+			bt.MoveTarget({x=0, y=-1, z=0}),
+			bt.Counter("stacking", "dec"), 
+			bt.Counter("stacking", "gt", 0), 
+		}))),
+		bt.PopTarget(),
+	})
+end
+
+btu.set_stack = function(item, height)
+	return bt.Sequence("", {
+		bt.PushTarget(),
+		bt.Counter("stacking", "set", height),
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			bt.Animate("punch"),
+			bt.SetNode(item),
+-- 			bt.WaitTicks(1),
+			
+			bt.MoveTarget({x=0, y=-1, z=0}),
+			bt.Counter("stacking", "dec"), 
+			bt.Counter("stacking", "gt", 0), 
+		}))),
+		bt.PopTarget(),
+	})
+end
+
+btu.fill_buildable_stack = function(item, height)
+	return bt.Sequence("", {
+		bt.PushTarget(),
+		bt.Counter("stacking", "set", height),
+		
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			bt.Animate("punch"),
+			
+			bt.Succeed(bt.Sequence("", {
+				bt.NodeBuildableTo("air"),
+				bt.SetNode(item),
+			})),
+			
+-- 			bt.WaitTicks(1),
+			
+			bt.MoveTarget({x=0, y=-1, z=0}),
+			bt.Counter("stacking", "dec"), 
+			bt.Counter("stacking", "gt", 0), 
+		}))),
+		bt.PopTarget(),
+	})
+end
+
+
+
