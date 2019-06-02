@@ -997,7 +997,8 @@ make_NPC("npc", function()
 --  	return found_mine({x=0, z=1})
  	return bt.Sequence("root", {
 		bt.MoveHere(),
-		build_town_walls("default:stonebrick", 1, 5),
+-- 		build_town_walls("default:stonebrick", 1, 5),
+		bt.Succeed(bt.AreaIsFlat({x=-50, y=-30, z=-50},{x=50, y=30, z=50}, 6)),
 		bt.Die(),
 	})
 -- 	return attack_player()

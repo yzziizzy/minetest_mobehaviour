@@ -120,6 +120,68 @@ function make_wolf(name, behavior_fn)
 end
 
 
+function make_sheep(name, behavior_fn) 
+
+	mobehavior:register_mob_fast(mn..":"..name, {
+		
+		type = "animal",
+		passive = false,
+		reach = 1,
+		hp_min = 12,
+		hp_max = 18,
+		armor = 600,
+		collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
+		visual = "mesh",
+		mesh = "animal_sheep.b3d",
+		drawtype = "front",
+ 		rotate = math.pi / -2,
+		textures = {
+			{"mobs_sheep.png"},
+			{"mobs_sheep_black.png"},
+			{"mobs_sheep_brown.png"},
+			{"mobs_sheep_grey.png"},
+		},
+		sounds = {},
+		makes_footstep_sound = false,
+		walk_velocity = 2,
+		run_velocity = 4,
+		runaway = false,
+		jump = true,
+		view_range = 25,
+		floats = 1,
+		drops = {
+			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 1},
+			{name = "fur:medium_pelt", chance = 1, min = 1, max = 1},
+		},
+		water_damage = 0,
+		lava_damage = 4,
+		light_damage = 0,
+		fear_height = 6,
+		animation = {
+			speed_normal = 60,
+			stand_start = 0,
+			stand_end = 60,
+			walk_start = 61,
+			walk_end = 120,
+			sleep_start = 121,
+			sleep_end = 180,
+		},
+
+		on_rightclick = function(self, clicker)
+			
+		end,
+		pre_activate = function(self, s,d)
+			self.bt = bt.Repeat("root", nil, {
+				behavior_fn();
+			})
+			
+		end
+	})
+	
+	mobs:register_egg(mn..":"..name, name.." Egg", "default_silver_sand.png", 1)
+end
+
+
 
 
 function make_bear(name, behavior_fn) 
@@ -231,6 +293,97 @@ function make_rat(name, behavior_fn)
 	})
 	
 	mobs:register_egg(mn..":"..name, name.." Egg", "default_dirt.png", 1)
+end
+
+
+function make_deer(name, behavior_fn) 
+
+	mobehavior:register_mob_fast(mn..":"..name, {
+		type = "animal",
+		passive = true,
+		reach = 1,
+		hp_min = 1,
+		hp_max = 4,
+		armor = 200,
+		collisionbox = {-0.7, -1, -0.7, 0.7, 0.7, 0.7},
+		visual = "mesh",
+		mesh = "animal_deer_f.b3d",
+		drawtype = "front",
+		textures = {
+			{"animal_deer_mesh_f.png"},
+		},
+		makes_footstep_sound = false,
+		walk_velocity = 1,
+		run_velocity = 4,
+		runaway = true,
+		jump = true,
+		view_range = 15,
+		floats = 1,
+		drops = {
+			{name = "mobehavior:meat_raw", chance = 1, min = 3, max = 5},
+		},
+		water_damage = 0,
+		lava_damage = 4,
+		light_damage = 0,
+		fear_height = 3,
+		on_rightclick = function(self, clicker)
+			
+		end,
+		pre_activate = function(self, s,d)
+			self.bt = bt.Repeat("root", nil, {
+				behavior_fn();
+			})
+			
+		end
+	})
+	
+	mobs:register_egg(mn..":"..name, name.." Egg", "default_brick.png", 1)
+end
+
+
+
+function make_buck(name, behavior_fn) 
+
+	mobehavior:register_mob_fast(mn..":"..name, {
+		type = "animal",
+		passive = true,
+		reach = 1,
+		hp_min = 1,
+		hp_max = 4,
+		armor = 200,
+		collisionbox = {-0.7, -1, -0.7, 0.7, 0.7, 0.7},
+		visual = "mesh",
+		mesh = "animal_deer_m.b3d",
+		drawtype = "front",
+		textures = {
+			{"animal_deer_mesh_m.png"},
+		},
+		makes_footstep_sound = false,
+		walk_velocity = 1,
+		run_velocity = 4,
+		runaway = true,
+		jump = true,
+		view_range = 15,
+		floats = 1,
+		drops = {
+			{name = "mobehavior:meat_raw", chance = 1, min = 3, max = 5},
+		},
+		water_damage = 0,
+		lava_damage = 4,
+		light_damage = 0,
+		fear_height = 3,
+		on_rightclick = function(self, clicker)
+			
+		end,
+		pre_activate = function(self, s,d)
+			self.bt = bt.Repeat("root", nil, {
+				behavior_fn();
+			})
+			
+		end
+	})
+	
+	mobs:register_egg(mn..":"..name, name.." Egg", "default_stonebrick.png", 1)
 end
 
 
