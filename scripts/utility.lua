@@ -57,7 +57,7 @@ end
 
 
 
-btu.dig_region = function(item)
+btu.dig_region = function()
 	return bt.Sequence("", {
 
 -- 		bt.Invert(bt.UntilFailed(bt.Sequence("dig the hole", {
@@ -211,6 +211,28 @@ btu.fill_buildable_stack = function(item, height)
 	})
 end
 
+
+btu.fence_region = function(item)
+	return bt.Sequence("", {
+
+		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+			
+			bt.FindPerimeterNodeInRegion({"air"}),
+			bt.Approach(2),
+			
+			-- chop it down
+			bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
+				bt.FindPerimeterNodeInRegion({"air"}),
+				bt.Approach(3),
+				bt.Animate("punch"),
+				bt.SetNode(item);
+				bt.WaitTicks(1),
+			}))),
+			
+			--bt.Print("end of loop"),
+		})))
+	})
+end
 
 
 btu.fill_item_rel_dir = function(check_item, fill_item, offset, dir)

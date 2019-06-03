@@ -26,27 +26,6 @@ approach with timeout/stuck fn
 
 
 
-btu.fence_region = function(item)
-	return bt.Sequence("", {
-
-		bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
-			
-			bt.FindPerimeterNodeInRegion({"air"}),
-			bt.Approach(2),
-			
-			-- chop it down
-			bt.Invert(bt.UntilFailed(bt.Sequence("fill region", {
-				bt.FindPerimeterNodeInRegion({"air"}),
-				bt.Approach(3),
-				bt.Animate("punch"),
-				bt.SetNode(item);
-				bt.WaitTicks(1),
-			}))),
-			
-			--bt.Print("end of loop"),
-		})))
-	})
-end
 
 
 local forager = function() 
@@ -963,6 +942,83 @@ local create_farm = function(dir)
 		
 		
 		
+		
+		bt.Die(),
+	})
+end
+
+
+
+local build_tower = function(dir) 
+	return bt.Sequence("", {
+		
+		bt.FindSpotOnGround(),
+		bt.SetWaypoint("away"),
+		bt.MoveTarget({x=-dir.x*5, y=0, z=-dir.z*5}),
+		bt.FindSurface(),
+		bt.MoveTarget({x=0, y=1, z=0}),
+		
+		bt.SetWaypoint("tower"),
+		
+		bt.FindRegionAround(1),
+		
+		btu.dig_region(),
+		bt.MoveRegion({x=0, y=-1, z=0}),
+		btu.dig_region(),
+		
+		btu.fence_region({name="default:stonebrick"}),
+		bt.MoveRegion({x=0, y=1, z=0}),
+	
+		bt.GetWaypoint("away"),
+		bt.Approach(1),
+		
+		btu.fill_region({name="default:stonebrick"}),
+		
+		
+		
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		btu.fence_region({name="default:stonebrick"}),
+		
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		btu.fence_region({name="default:stonebrick"}),
+		
+		
+		bt.GetWaypoint("tower"),
+		bt.SetNodeRel("air", {x=dir.x, y=0, z=dir.z}),
+		bt.SetNodeRel("air", {x=dir.x, y=1, z=dir.z}),
+		
+		bt.SetNodeRelWallmounted("default:ladder", {x=0, y=1, z=0}, {x=-dir.x, y=0, z=-dir.z}),
+		
+		bt.GetWaypoint("away"),
+		bt.Approach(1),
+		
+		bt.MoveRegion({x=0, y=1, z=0}),
+		btu.dig_region(),
+		btu.fence_region({name="default:stonebrick"}),
+
+		bt.GetWaypoint("tower"),
+		bt.SetNodeRelWallmounted("default:ladder", {x=0, y=2, z=0}, {x=-dir.x, y=0, z=-dir.z}),
+
+		
+		bt.MoveRegion({x=0, y=1, z=0}),
+		bt.ScaleRegion({x=1, y=0, z=1}),
+		btu.dig_region(),
+		btu.fence_region({name="default:stonebrick"}),
+		
+		bt.GetWaypoint("tower"),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=2, y=4, z=0}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=-2, y=4, z=0}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=0, y=4, z=2}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=0, y=4, z=-2}),
+		
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=-2, y=4, z=-2}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x= 2, y=4, z=-2}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x= 2, y=4, z= 2}),
+		bt.SetNodeRel("stairs:slab_stonebrick", {x=-2, y=4, z= 2}),
+
+		
 		bt.Die(),
 	})
 end
@@ -970,9 +1026,24 @@ end
 
 
 
-
-
-
+local pace_debug = function(dir, dist) 
+	return bt.Sequence("", {
+		
+		bt.MoveHere(),
+		bt.SetWaypoint("A"),
+		bt.MoveTarget({x=dir.x*dist, y=dir.y*dist, z=dir.z*dist}),
+-- 		bt.FindSurface(),
+		bt.SetWaypoint("B"),
+		
+		bt.UntilFailed(bt.Succeed(bt.Sequence("pace", {
+			bt.GetWaypoint("A"),
+			bt.Approach(1),
+			bt.GetWaypoint("B"),
+			bt.Approach(1),
+			bt.WaitTicks(1),
+		}))),
+	})
+end
 
 make_wolf("wolf", function() 
 	return wander_around(6)
@@ -995,12 +1066,16 @@ make_NPC("npc", function()
 -- 	return bare_lumberjack()
 --  	return build_house()
 --  	return found_mine({x=0, z=1})
+ 	--[[
  	return bt.Sequence("root", {
 		bt.MoveHere(),
 -- 		build_town_walls("default:stonebrick", 1, 5),
 		bt.Succeed(bt.AreaIsFlat({x=-50, y=-30, z=-50},{x=50, y=30, z=50}, 6)),
 		bt.Die(),
 	})
--- 	return attack_player()
+	
+	]]
+-- 	return build_tower({x=0, z=1})
+	return pace_debug({x=0, y= 1, z=0}, 10)
 end)
 
