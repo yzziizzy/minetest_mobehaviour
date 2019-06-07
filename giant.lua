@@ -264,22 +264,22 @@ local rat_root = function()
 		"group:rice",
 	}
 
-	return bt.Sequence("rat", {
+	return bt.Selector("rat", {
+		raid_chest(20, 1),
+		seek_and_destroy(20, 12, {"doors:door_wood_a","doors:door_wood_b", "doors:trapdoor_a", "doors:trapdoor_b"}),
+		seek_and_destroy(20, 18, {"doors:door_glass_a","doors:door_glass_b"}),
+		seek_food(6, food),
 		bt.Random({
- 			wander_around(2),
+			wander_around(2),
 			wander_around(4),
 			wander_around(6),
--- 			wander_around(8),
 			bt.WaitTicks(1),
+		}),
+-- 			wander_around(8),
 -- 			bt.WaitTicks(1),
-			bt.WaitTicks(2),
 -- 			bt.WaitTicks(2),
-			seek_food(6, food),
-			raid_chest(20, 1),
-			seek_and_destroy(20, 12, {"doors:door_wood_a","doors:door_wood_b", "doors:trapdoor_a", "doors:trapdoor_b"}),
-			seek_and_destroy(20, 18, {"doors:door_glass_a","doors:door_glass_b"}),
-			-- breeding
-		})
+-- 			bt.WaitTicks(2),
+		-- breeding
 	})
 end
 

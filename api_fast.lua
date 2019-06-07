@@ -1,12 +1,331 @@
 
 
 
+set_velocity2 = function(self, v, up)
+
+	local x = 0
+	local z = 0
+
+	if v and v ~= 0 then
+
+		local yaw = (self.object:getyaw() + self.rotate) or 0
+
+		x = math.sin(yaw) * -v
+		z = math.cos(yaw) * v
+	end
+
+	local y
+	if up then
+		y = up
+	else
+		y = self.object:getvelocity().y
+	end
+	
+	self.object:setvelocity({
+		x = x,
+		y = y,
+		z = z
+	})
+end
+
+
+
+
+
+local function animal_step(self, dtime)
+	local btdata = self.btData
+-- 			print('newstep')
+	local pos = self.object:getpos()
+	local yaw = self.object:getyaw() or 0
+	
+	self.bt_timer = self.bt_timer + dtime
+	
+	-- run the behavior tree every two seconds
+	if self.bt_timer > 2 then
+		
+		btdata.pos = pos
+		btdata.yaw = yaw
+		btdata.mob = self
+		
+		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+			
+		-- inventories cannot be serialized and cause the game to crash if
+		-- placed in the entity's table
+		local inv = minetest.get_inventory({type="detached", name=self.inv_id})
+		btdata.inv = inv
+		
+		bt.tick(self.bt, btdata)
+		print("<<< end >>>\n")
+		
+		-- so clear it out after running the behavior trees
+		btdata.inv = nil
+		-- the inventory exists on its own
+	
+		self.bt_timer = 0
+	end
+	
+	
+	local rpos = vector.round(pos)
+	if not vector.equals(self.last_rpos, rpos) then
+		
+		local below = minetest.get_node({x=rpos.x, y=rpos.y-2, z=rpos.z})
+		
+		self.node_below = below.name
+		print("below: ".. self.node_below)
+		
+		self.last_rpos = rpos
+	end
+	
+	
+	-- handle movement
+	
+	local v = self.object:getvelocity()
+	
+	-- TODO: floating
+	
+
+	if minetest.registered_nodes[self.node_below].climbable then
+		self.object:setacceleration({
+			x = 0,
+			y = 0,
+			z = 0
+		})
+	else
+		self.object:setacceleration({
+			x = 0,
+			y = self.fall_speed,
+			z = 0
+		})
+	end
+	
+	-- TODO: fall damage
+	
+	self.jump_timer = self.jump_timer + dtime
+	
+	
+	if self.destination ~= nil then
+		
+		self.walk_timer = self.walk_timer + dtime
+		
+		--print("destination ")
+		
+		local tdist = distance3(pos, btdata.lastpos)
+		local dist2 = distance(pos, self.destination)
+		-- print("walk dist ".. dist)
+		local s = self.destination
+		local vec = {
+			x = pos.x - s.x,
+			y = pos.y - s.y,
+			z = pos.z - s.z
+		}
+		
+		
+		if tdist < self.walk_velocity * dtime * .9 and self.walk_timer > 1 then
+			
+			if self.jump_timer > 4 then
+				local v = self.object:getvelocity()
+
+				v.y = self.jump_height + 1
+				v.x = v.x * 2.2
+				v.z = v.z * 2.2
+
+				self.object:setvelocity(v)
+				
+				self.jump_timer = 0
+			end
+		end
+		
+		
+		yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
+		self.object:setyaw(yaw)
+
+		
+		if dist2 < (self.approachDistance or .1) then
+				
+			-- we have arrived
+			self.destination = nil
+			self.walk_timer = 0
+			
+			-- TODO: make sure this doesn't lead to infinite loops
+			-- bump bttimer to get new directions
+			self.bt_timer = 99
+			
+			set_velocity(self, 0)
+			set_animation(self, "stand")
+			
+		else
+			
+			-- TODO look at dy/dxz and see if we need to try to go up
+			if dist2 < (self.approachDistance or .1) then
+				set_velocity(self, 0, self.walk_velocity)
+			else
+				set_velocity(self, self.walk_velocity)
+				set_animation(self, "walk")
+			end
+		end
+	end
+	
+	btdata.lastpos = pos
+
+end
+
+
+local function npc_step(self, dtime)
+	local btdata = self.btData
+-- 			print('newstep')
+	local pos = self.object:getpos()
+	local yaw = self.object:getyaw() or 0
+	
+	self.bt_timer = self.bt_timer + dtime
+	
+	-- run the behavior tree every two seconds
+	if self.bt_timer > 2 then
+		
+		btdata.pos = pos
+		btdata.yaw = yaw
+		btdata.mob = self
+		
+		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+			
+		-- inventories cannot be serialized and cause the game to crash if
+		-- placed in the entity's table
+		local inv = minetest.get_inventory({type="detached", name=self.inv_id})
+		btdata.inv = inv
+		
+		bt.tick(self.bt, btdata)
+		print("<<< end >>>\n")
+		
+		-- so clear it out after running the behavior trees
+		btdata.inv = nil
+		-- the inventory exists on its own
+	
+		self.bt_timer = 0
+	end
+	
+	
+	local rpos = vector.round(pos)
+	if not vector.equals(self.last_rpos, rpos) then
+		
+		local below = minetest.get_node({x=rpos.x, y=rpos.y-2, z=rpos.z})
+		
+		self.node_below = below.name
+		print("below: ".. self.node_below)
+		
+		self.last_rpos = rpos
+	end
+	
+	
+	-- handle movement
+	
+	local v = self.object:getvelocity()
+	
+	-- TODO: floating
+	
+
+	if minetest.registered_nodes[self.node_below].climbable then
+		self.object:setacceleration({
+			x = 0,
+			y = 0,
+			z = 0
+		})
+	else
+		self.object:setacceleration({
+			x = 0,
+			y = self.fall_speed,
+			z = 0
+		})
+	end
+	
+	-- TODO: fall damage
+	
+	self.jump_timer = self.jump_timer + dtime
+	
+	
+	if self.destination ~= nil then
+		
+		self.walk_timer = self.walk_timer + dtime
+		
+		--print("destination ")
+		
+		local tdist = distance3(pos, btdata.lastpos)
+		local dist2 = distance(pos, self.destination)
+		local dist3 = distance3(pos, self.destination)
+		-- print("walk dist ".. dist)
+		local s = self.destination
+		local vec = {
+			x = pos.x - s.x,
+			y = pos.y - s.y,
+			z = pos.z - s.z
+		}
+		
+		
+		if tdist < self.walk_velocity * dtime * .9 and self.walk_timer > 1 then
+			
+			-- try to go up first
+			local n = minetest.get_node(pos)
+			if minetest.registered_nodes[n.name].climbable then
+				set_velocity(self, 0, self.walkvelocity)
+			
+			elseif self.jump_timer > 4 then
+				local v = self.object:getvelocity()
+
+				v.y = self.jump_height + 1
+				v.x = v.x * 2.2
+				v.z = v.z * 2.2
+
+				self.object:setvelocity(v)
+				
+				self.jump_timer = 0
+			end
+		end
+		
+		
+		yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
+		self.object:setyaw(yaw)
+
+		
+		if dist3 < (self.approachDistance or .1) then
+				
+			-- we have arrived
+			self.destination = nil
+			self.walk_timer = 0
+			
+			-- TODO: make sure this doesn't lead to infinite loops
+			-- bump bttimer to get new directions
+			self.bt_timer = 99
+			
+			set_velocity(self, 0)
+			set_animation(self, "stand")
+			
+		else
+			
+			-- TODO look at dy/dxz and see if we need to try to go up
+			if dist2 < (self.approachDistance or .1) then
+				set_velocity(self, 0, self.walk_velocity)
+			else
+				set_velocity(self, self.walk_velocity)
+				set_animation(self, "walk")
+			end
+		end
+	end
+	
+	btdata.lastpos = pos
+
+end
+
 
 
 
 
 
 function mobehavior:register_mob_fast(name, def)
+	local step
+	
+	if def.climbs_ladders then
+		step = npc_step
+	else
+		step = animal_step
+	end
 	
 	local mdef = {
 		hp_max = 1,
@@ -32,123 +351,14 @@ function mobehavior:register_mob_fast(name, def)
 		bt_timer = 0,
 		bt = nil,
 		btData = nil,
-
+		
+		last_rpos = {x=99999999, y=9999999999, z=99999999},
+		node_below = "air",
+		
 		jump_timer = 0,
 		walk_timer = 0,
 
-		on_step = function(self, dtime)
-			local btdata = self.btData
--- 			print('newstep')
-			local pos = self.object:getpos()
-			local yaw = self.object:getyaw() or 0
-			
-			self.bt_timer = self.bt_timer + dtime
-			
-			-- run the behavior tree every two seconds
-			if self.bt_timer > 2 then
-				
-				btdata.pos = pos
-				btdata.yaw = yaw
-				btdata.mob = self
-				
-				print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
-					
-				-- inventories cannot be serialized and cause the game to crash if
-				-- placed in the entity's table
-				local inv = minetest.get_inventory({type="detached", name=self.inv_id})
-				btdata.inv = inv
-				
-				bt.tick(self.bt, btdata)
-				print("<<< end >>>\n")
-				
-				-- so clear it out after running the behavior trees
-				btdata.inv = nil
-				-- the inventory exists on its own
-			
-				self.bt_timer = 0
-			end
-			
-			
-			
-			-- handle movement
-			
-			local v = self.object:getvelocity()
-			
-			-- TODO: floating
-			
-			-- going up then apply gravity
--- 			if v.y > 0.1 then
-				
-				self.object:setacceleration({
-					x = 0,
-					y = self.fall_speed,
-					z = 0
-				})
--- 			end
-			
-			-- TODO: fall damage
-			
-			self.jump_timer = self.jump_timer + dtime
-			
-			
-			if self.destination ~= nil then
-				
-				self.walk_timer = self.walk_timer + dtime
-				
-				--print("destination ")
-				
-				local tdist = distance(pos, btdata.lastpos)
-				local dist = distance(pos, self.destination)
-				-- print("walk dist ".. dist)
-				local s = self.destination
-				local vec = {
-					x = pos.x - s.x,
-					y = pos.y - s.y,
-					z = pos.z - s.z
-				}
-				
-				if tdist < self.walk_velocity * dtime * .9 and self.walk_timer > 1 then
-					
-					if self.jump_timer > 4 then
-						local v = self.object:getvelocity()
-
-						v.y = self.jump_height + 1
-						v.x = v.x * 2.2
-						v.z = v.z * 2.2
-
-						self.object:setvelocity(v)
-						
-						self.jump_timer = 0
-					end
-				end
-				
-				
-				yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
-				self.object:setyaw(yaw)
-
-				
-				if dist > (self.approachDistance or .1) then
-						
-					set_velocity(self, self.walk_velocity)
-					set_animation(self, "walk")
-				else
-					-- we have arrived
-					self.destination = nil
-					self.walk_timer = 0
-					
-					-- TODO: make sure this doesn't lead to infinite loops
-					-- bump bttimer to get new directions
-					self.bt_timer = 99
-					
-					set_velocity(self, 0)
-					set_animation(self, "stand")
-				end
-			end
-			
-			btdata.lastpos = pos
-		
-		end,
-			
+		on_step = step,
 			
 		on_activate = function(self, staticdata, dtime_s)
 			self.btData = {
@@ -171,6 +381,7 @@ function mobehavior:register_mob_fast(name, def)
 			--print(btdata.id)
 			
 			btdata.lastpos = self.object:getpos()
+			btdata.last_rpos = vector.round(self.object:getpos())
 		
 			if type(def.pre_activate) == "function" then
 				def.pre_activate(self, static_data, dtime_s)

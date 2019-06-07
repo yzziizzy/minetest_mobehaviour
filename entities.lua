@@ -251,6 +251,7 @@ function make_rat(name, behavior_fn)
 
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
+		climbs_ladders = false,
 		passive = true,
 		reach = 1,
 		hp_min = 1,
@@ -394,6 +395,7 @@ function make_NPC(name, behavior_fn)
 -- 	mobs:register_simple_mob(mn..":"..name, {
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "monster",
+		climbs_ladders = true,
 		passive = false,
 		attack_type = "dogfight",
 		reach = 2,
