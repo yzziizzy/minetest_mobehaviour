@@ -47,7 +47,7 @@ local function animal_step(self, dtime)
 		btdata.yaw = yaw
 		btdata.mob = self
 		
-		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+-- 		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
 			
 		-- inventories cannot be serialized and cause the game to crash if
 		-- placed in the entity's table
@@ -55,7 +55,7 @@ local function animal_step(self, dtime)
 		btdata.inv = inv
 		
 		bt.tick(self.bt, btdata)
-		print("<<< end >>>\n")
+-- 		print("<<< end >>>\n")
 		
 		-- so clear it out after running the behavior trees
 		btdata.inv = nil
@@ -71,7 +71,7 @@ local function animal_step(self, dtime)
 		local below = minetest.get_node({x=rpos.x, y=rpos.y-2, z=rpos.z})
 		
 		self.node_below = below.name
-		print("below: ".. self.node_below)
+-- 		print("below: ".. self.node_below)
 		
 		self.last_rpos = rpos
 	end
