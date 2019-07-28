@@ -3,10 +3,11 @@ function make_bunny(name, behavior_fn)
 
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
+		name = name,
 		passive = true,
 		reach = 1,
-		hp_min = 1,
-		hp_max = 4,
+		hp_min = 12,
+		hp_max = 14,
 		armor = 200,
 		collisionbox = {-0.268, -0.5, -0.268,  0.268, 0.167, 0.268},
 		visual = "mesh",
@@ -65,6 +66,7 @@ function make_wolf(name, behavior_fn)
 	mobehavior:register_mob_fast(mn..":"..name, {
 		
 		type = "animal",
+		name = name,
 		passive = false,
 		reach = 1,
 		hp_min = 12,
@@ -125,6 +127,7 @@ function make_sheep(name, behavior_fn)
 	mobehavior:register_mob_fast(mn..":"..name, {
 		
 		type = "animal",
+		name = name,
 		passive = false,
 		reach = 1,
 		hp_min = 12,
@@ -189,6 +192,7 @@ function make_bear(name, behavior_fn)
 	mobehavior:register_mob_fast(mn..":"..name, {
 		
 		type = "animal",
+		name = name,
 		passive = false,
 		reach = 1,
 		hp_min = 100,
@@ -251,6 +255,7 @@ function make_rat(name, behavior_fn)
 
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
+		name = name,
 		climbs_ladders = false,
 		passive = true,
 		reach = 1,
@@ -301,6 +306,7 @@ function make_deer(name, behavior_fn)
 
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
+		name = name,
 		passive = true,
 		reach = 1,
 		hp_min = 1,
@@ -347,6 +353,7 @@ function make_buck(name, behavior_fn)
 
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "animal",
+		name = name,
 		passive = true,
 		reach = 1,
 		hp_min = 1,
@@ -395,6 +402,7 @@ function make_NPC(name, behavior_fn)
 -- 	mobs:register_simple_mob(mn..":"..name, {
 	mobehavior:register_mob_fast(mn..":"..name, {
 		type = "monster",
+		name = name,
 		climbs_ladders = true,
 		passive = false,
 		attack_type = "dogfight",

@@ -328,8 +328,7 @@ function mobehavior:register_mob_fast(name, def)
 	end
 	
 	local mdef = {
-		hp_max = 1,
-		health = 1,
+		hp = 14,
 		rotate = 0,
 		reach = 3,
 		physical = true,
@@ -358,6 +357,39 @@ function mobehavior:register_mob_fast(name, def)
 		jump_timer = 0,
 		walk_timer = 0,
 
+		on_death = function(self, killer)
+-- 			print("died")
+			local p = self
+			local obj = self.object
+			if not p then return end
+			
+			local drops = p.drops
+			if not drops then return end
+			
+			local pos = obj:get_pos()
+			
+			if type(drops) == "string" then
+				minetest.add_item(pos, drops)
+				return
+			end
+			
+			local total = 0
+			for _,d in ipairs(drops) do
+				if type(d) == string then
+					minetest.add_item(pos, d)
+				else
+					if 1 == math.random(d.chance or 1) then
+						minetest.add_item(pos, {name=d.name, count=d.min + math.random(d.max-d.min)})
+					end
+				end
+			end
+			
+		end,
+		
+		on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
+-- 			print("punched")
+		end,
+		
 		on_step = step,
 			
 		on_activate = function(self, staticdata, dtime_s)
@@ -457,8 +489,8 @@ function mobehavior:register_mob_fast(name, def)
 				}
 			end
 
-			if self.health == 0 then
-				self.health = math.random (self.hp_min, self.hp_max)
+			if not self.health or self.health == 0 then
+				self.health = math.random(self.hp_min, self.hp_max)
 			end
 
 			self.object:set_hp(self.health)

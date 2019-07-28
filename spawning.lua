@@ -65,12 +65,22 @@ minetest.register_abm({
 			return
 		end
 		
-		local nearobjs = minetest.get_objects_inside_radius(pos, 50)
-		if #nearobjs > 3 then
-		--	print("too many near objs")
+		local nearobjs = minetest.get_objects_inside_radius(pos, 40)
+		if #nearobjs > 0 then
+-- 			print("------")
+			for _,o in ipairs(nearobjs) do
+				local p = o:get_luaentity()
+				if p and p.name == "wolf" then
+					count = count + 1
+					if count > 1 then
+						return
+					end
+				end
+			end
+			
+			--print("too many near objs")
 			return
 		end
-		
 		--print("----------spawning rat")
 		local p = minetest.find_node_near(pos, 3, "air")
 		if p then
@@ -92,8 +102,8 @@ minetest.register_abm({
 		"default:silver_sand",
 	},
 	neighbors = {"air"},
-	interval = 45,
-	chance = 800,
+	interval = 4,
+	chance = 80,
 	catch_up = false,
 
 	action = function(pos, node, active_object_count, active_object_count_wider)
@@ -112,6 +122,51 @@ minetest.register_abm({
 		local p = minetest.find_node_near(pos, 3, "air")
 		if p then
 			local mob = minetest.add_entity(p, "mobehavior:bunny")
+		end
+	end
+})
+
+
+
+-- brown bears
+minetest.register_abm({
+	nodenames = {
+		"default:dirt_with_grass", 
+		"seasons:spring_default_dirt_with_grass",
+		"default:dirt_with_coniferous_litter",
+	},
+	neighbors = {"air"},
+	interval = 6,
+	chance = 150,
+	catch_up = false,
+
+	action = function(pos, node, active_object_count, active_object_count_wider)
+		if active_object_count > 5 then
+			--print("too many local objs " .. active_object_count)
+			return
+		end
+		
+		local nearobjs = minetest.get_objects_inside_radius(pos, 40)
+		if #nearobjs > 0 then
+-- 			print("------")
+			for _,o in ipairs(nearobjs) do
+				local p = o:get_luaentity()
+				if p and p.name == "bear" then
+					count = count + 1
+					if count > 1 then
+						return
+					end
+				end
+			end
+			
+			--print("too many near objs")
+			return
+		end
+		
+		--print("----------spawning rat")
+		local p = minetest.find_node_near(pos, 3, "air")
+		if p then
+			local mob = minetest.add_entity(p, "mobehavior:bear")
 		end
 	end
 })
