@@ -66,10 +66,12 @@ local function animal_step(self, dtime)
 	
 	
 	local rpos = vector.round(pos)
-	if not vector.equals(self.last_rpos, rpos) then
+	if not self.node_here or not self.node_below or not vector.equals(self.last_rpos, rpos) then
 		
+		local here = minetest.get_node({x=rpos.x, y=rpos.y, z=rpos.z})
 		local below = minetest.get_node({x=rpos.x, y=rpos.y-2, z=rpos.z})
 		
+		self.node_here = here.name
 		self.node_below = below.name
 -- 		print("below: ".. self.node_below)
 		
@@ -83,13 +85,24 @@ local function animal_step(self, dtime)
 	
 	-- TODO: floating
 	
+	local bdef = minetest.registered_nodes[self.node_below]
 
-	if minetest.registered_nodes[self.node_below].climbable then
+	if minetest.registered_nodes[self.node_here].drawtype == "liquid" then
+-- 		print("in liquid")
+		self.object:setacceleration({ -- float
+			x = 0,
+			y = 1,
+			z = 0
+		})
+		
+	elseif bdef.climbable or bdef.drawtype == "liquid" then
 		self.object:setacceleration({
 			x = 0,
 			y = 0,
 			z = 0
 		})
+		local v = self.object:getvelocity()
+		self.object:setvelocity({x=v.x, y=0, z=v.z})
 	else
 		self.object:setacceleration({
 			x = 0,
@@ -492,9 +505,16 @@ function mobehavior:register_mob_fast(name, def)
 			if not self.health or self.health == 0 then
 				self.health = math.random(self.hp_min, self.hp_max)
 			end
-
+			
 			self.object:set_hp(self.health)
-			self.object:set_armor_groups({fleshy = self.armor})
+			
+			
+			if type(self.armor) == "table" then
+				self.object:set_armor_groups(self.armor)
+			else
+				self.object:set_armor_groups({fleshy = self.armor})
+			end
+			
 			self.old_y = self.object:getpos().y
 			self.object:setyaw(math.random(1, 360) / 180 * math.pi)
 	-- 		self.sounds.distance = (self.sounds.distance or 10)

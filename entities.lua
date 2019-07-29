@@ -28,7 +28,7 @@ function make_bunny(name, behavior_fn)
 		floats = 0,
 		drops = {
 			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 2},
-			{name = "fur:small_pelt", chance = 1, min = 1, max = 1},
+			{name = "mobehavior:fur_small", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -90,8 +90,8 @@ function make_wolf(name, behavior_fn)
 		view_range = 25,
 		floats = 1,
 		drops = {
-			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 1},
-			{name = "fur:medium_pelt", chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 2, max = 3},
+			{name = "mobehavior:fur_medium", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -153,8 +153,8 @@ function make_sheep(name, behavior_fn)
 		view_range = 25,
 		floats = 1,
 		drops = {
-			{name = "mobehavior:meat_raw", chance = 1, min = 1, max = 1},
-			{name = "fur:medium_pelt", chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 2, max = 3},
+			{name = "mobehavior:fur_medium", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -217,8 +217,8 @@ function make_bear(name, behavior_fn)
 		view_range = 25,
 		floats = 1,
 		drops = {
-			{name = "mobehavior:meat_raw",
-			chance = 1, min = 1, max = 1},
+			{name = "mobehavior:meat_raw", chance = 1, min = 5, max = 7},
+			{name = "mobehavior:fur_large", chance = 1, min = 1, max = 1},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -328,6 +328,7 @@ function make_deer(name, behavior_fn)
 		floats = 1,
 		drops = {
 			{name = "mobehavior:meat_raw", chance = 1, min = 3, max = 5},
+			{name = "mobehavior:fur_medium", chance = 1, min = 1, max = 2},
 		},
 		water_damage = 0,
 		lava_damage = 4,
@@ -375,6 +376,7 @@ function make_buck(name, behavior_fn)
 		floats = 1,
 		drops = {
 			{name = "mobehavior:meat_raw", chance = 1, min = 3, max = 5},
+			{name = "mobehavior:fur_medium", chance = 1, min = 1, max = 2},
 		},
 		water_damage = 0,
 		lava_damage = 4,

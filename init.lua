@@ -46,7 +46,7 @@ end
 -- new api from scratch
 dofile(path.."/api_fast.lua")
 
-dofile(path.."/meat.lua")
+dofile(path.."/items.lua")
 dofile(path.."/api.lua")
 dofile(path.."/behavior.lua")
 -- dofile(path.."/simple_api.lua")
