@@ -225,52 +225,16 @@ minetest.register_entity(name, {
 -- 			return
 -- 		end
 
-		-- attack timer
--- 		self.timer = self.timer + dtime
-
--- 		if self.state ~= "attack" then
--- 
--- 			if self.timer < 1 then
--- 				return
--- 			end
--- 
--- 			self.timer = 0
--- 		end
-
 		-- never go over 100
 		if self.timer > 100 then
 			self.timer = 1
 		end
 
-		-- node replace check (cow eats grass etc.)
-		-- handled by btree -- replace(self, pos)
-
-		-- mob plays random sound at times
-		if self.sounds.random
-		and math.random(1, 100) == 1 then
-
-			minetest.sound_play(self.sounds.random, {
-				object = self.object,
-				max_hear_distance = self.sounds.distance
-			})
-		end
-
+	
+	
 		-- environmental damage timer (every 1 second)
 		self.env_damage_timer = self.env_damage_timer + dtime
 
-		if (self.state == "attack" and self.env_damage_timer > 1)
-		or self.state ~= "attack" then
-
-			self.env_damage_timer = 0
-
-			do_env_damage(self)
-
-			-- custom function (defined in mob lua file)
-			if self.do_custom then
-				self.do_custom(self)
-			end
-		end
-		
 		
 		if self.destination ~= nil then
 			
@@ -372,16 +336,6 @@ local hp = self.object:get_hp()
 			return
 		end
 print("didn't die from punch")
-		-- blood_particles
-		if self.blood_amount > 0
-		and not disable_blood then
-
-			local pos = self.object:getpos()
-
-			pos.y = pos.y + (-self.collisionbox[2] + self.collisionbox[5]) / 2
-
-			effect(pos, self.blood_amount, self.blood_texture)
-		end
 
 		-- knock back effect
 		if self.knock_back > 0 then

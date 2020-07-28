@@ -1076,6 +1076,6 @@ make_NPC("npc", function()
 	
 	]]
 -- 	return build_tower({x=0, z=1})
-	return pace_debug({x=0, y= 1, z=0}, 10)
+	return pace_debug({x=.5, y= 1, z=0}, 15)
 end)
 

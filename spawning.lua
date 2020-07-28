@@ -20,7 +20,7 @@ minetest.register_abm({
 		
 	},
 	neighbors = {"air"},
-	interval = 30,
+	interval = 3000,
 	chance = 1000,
 	catch_up = false,
 
@@ -55,7 +55,7 @@ minetest.register_abm({
 		"default:dirt_with_coniferous_litter",
 	},
 	neighbors = {"air"},
-	interval = 60,
+	interval = 6000,
 	chance = 400,
 	catch_up = false,
 
@@ -102,8 +102,8 @@ minetest.register_abm({
 		"default:silver_sand",
 	},
 	neighbors = {"air"},
-	interval = 4,
-	chance = 80,
+	interval = 4000,
+	chance = 800,
 	catch_up = false,
 
 	action = function(pos, node, active_object_count, active_object_count_wider)
@@ -136,8 +136,8 @@ minetest.register_abm({
 		"default:dirt_with_coniferous_litter",
 	},
 	neighbors = {"air"},
-	interval = 6,
-	chance = 150,
+	interval = 6000,
+	chance = 1500,
 	catch_up = false,
 
 	action = function(pos, node, active_object_count, active_object_count_wider)

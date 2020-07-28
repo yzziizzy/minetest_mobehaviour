@@ -1,5 +1,25 @@
 
 
+set_velocity = function(self, v)
+
+	local x = 0
+	local z = 0
+
+	if v and v ~= 0 then
+
+		local yaw = (self.object:getyaw() + self.rotate) or 0
+
+		x = math.sin(yaw) * -v
+		z = math.cos(yaw) * v
+	end
+
+	self.object:setvelocity({
+		x = x,
+		y = self.object:getvelocity().y,
+		z = z
+	})
+end
+
 
 set_velocity2 = function(self, v, up)
 
@@ -30,6 +50,76 @@ end
 
 
 
+
+set_animation = function(self, type)
+
+	if not self.animation then
+		return
+	end
+
+	self.animation.current = self.animation.current or ""
+
+	if type == "stand"
+	and self.animation.current ~= "stand" then
+
+		if self.animation.stand_start
+		and self.animation.stand_end
+		and self.animation.speed_normal then
+
+			self.object:set_animation({
+				x = self.animation.stand_start,
+				y = self.animation.stand_end},
+
+				self.animation.speed_normal, 0)
+			self.animation.current = "stand"
+		end
+
+	elseif type == "walk"
+	and self.animation.current ~= "walk" then
+
+		if self.animation.walk_start
+		and self.animation.walk_end
+		and self.animation.speed_normal then
+
+			self.object:set_animation({
+				x = self.animation.walk_start,
+				y = self.animation.walk_end},
+				self.animation.speed_normal, 0)
+
+			self.animation.current = "walk"
+		end
+
+	elseif type == "run"
+	and self.animation.current ~= "run" then
+
+		if self.animation.run_start
+		and self.animation.run_end
+		and self.animation.speed_run then
+
+			self.object:set_animation({
+				x = self.animation.run_start,
+				y = self.animation.run_end},
+				self.animation.speed_run, 0)
+
+			self.animation.current = "run"
+		end
+
+	elseif type == "punch"
+	and self.animation.current ~= "punch" then
+
+		if self.animation.punch_start
+		and self.animation.punch_end
+		and self.animation.speed_normal then
+
+			self.object:set_animation({
+				x = self.animation.punch_start,
+				y = self.animation.punch_end},
+				self.animation.speed_normal, 0)
+
+			self.animation.current = "punch"
+		end
+	end
+end
 
 
 local function animal_step(self, dtime)
@@ -276,8 +366,10 @@ local function npc_step(self, dtime)
 			
 			-- try to go up first
 			local n = minetest.get_node(pos)
+			print("node: "..n.name)
 			if minetest.registered_nodes[n.name].climbable then
-				set_velocity(self, 0, self.walkvelocity)
+				print("going up")
+				set_velocity2(self, 0, 3--[[self.walkvelocity]])
 			
 			elseif self.jump_timer > 4 then
 				local v = self.object:getvelocity()
@@ -310,8 +402,8 @@ local function npc_step(self, dtime)
 			set_velocity(self, 0)
 			set_animation(self, "stand")
 			
-		else
-			
+		elseif 1 == 0 then
+			print("alt")
 			-- TODO look at dy/dxz and see if we need to try to go up
 			if dist2 < (self.approachDistance or .1) then
 				set_velocity(self, 0, self.walk_velocity)
@@ -525,7 +617,7 @@ function mobehavior:register_mob_fast(name, def)
 
 			-- set anything changed above
 			self.object:set_properties(self)
-			update_tag(self)
+-- 			update_tag(self)
 			
 			if type(def.post_activate) == "function" then
 				def.post_activate(self, static_data, dtime_s)
