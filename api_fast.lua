@@ -16,7 +16,7 @@ end
 
 
 set_velocity = function(self, v)
-
+	self.jumping = false
 	local x = 0
 	local z = 0
 
@@ -312,6 +312,7 @@ moveresult = {
 
 local function walk_dest(self, pos)
 	local s = self.next_wp
+	
 	local vec = {
 		x = pos.x - s.x,
 		y = pos.y - s.y,
@@ -346,6 +347,9 @@ local function npc_step(self, dtime, mr)
 	local standing_on_pos = nil
 	local collisions = {}
 	
+	if mr.standing_on_object == true or mr.touching_ground == true then
+		self.jumping = false
+	end
 	
 	--print(dump(mr))
 	--print("p.y " .. pos.y..", rp "..minetest.pos_to_string(rpos))
@@ -359,6 +363,8 @@ local function npc_step(self, dtime, mr)
 				--	print("standing on "..n.name)
 					standing_on_node = n
 					standing_on_pos = v.node_pos
+					
+					
 				else
 			--		print("coll: "..n.name.." at " .. minetest.pos_to_string(v.node_pos))
 					table.insert(collisions, {p = v.node_pos, n = n})
@@ -374,6 +380,8 @@ local function npc_step(self, dtime, mr)
 	
 	self.bt_timer = self.bt_timer + dtime
 	--set_animation(self, "walk")
+	
+	
 	
 	-- run the behavior tree every two seconds
 	if self.bt_timer > 2 then
@@ -478,8 +486,17 @@ local function npc_step(self, dtime, mr)
 		end	
 	
 		
+		if self.jumping == true then
+			-- collisions stop velocity, so keep pushing forward while jumping
+			
+			local v = self.object:getvelocity()
+			
+			v.x = -math.sin(yaw) * 2.2
+			v.z = math.cos(yaw) * 2.2
 		
-		if tdist < (self.approachDistance or 0.1) and #self.wp_list <= 1 then
+			self.object:set_velocity(v)
+		
+		elseif tdist < (self.approachDistance or 0.1) and #self.wp_list <= 1 then
 			-- check arrival
 			
 			if #self.wp_list <= 1 then
@@ -520,7 +537,20 @@ local function npc_step(self, dtime, mr)
 			-- TODO: check for final arrival
 			if #self.wp_list == 1 then
 				-- arrived
-				print("arrived, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
+				
+				-- bug: gets stuf f you arrive too far away and the btree does not
+				--   run the next cycle. tall stairs with falling near the dest.
+				
+				print("final arrival, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
+				--self.jumping = false
+				
+				self.destination = nil
+				self.internal_dest = nil
+				self.wp_list = {}
+				self.next_wp = nil
+				
+				self.arrived = 1
+				
 				set_velocity(self, 0)
 				set_animation(self, "stand")
 			else
@@ -541,75 +571,108 @@ local function npc_step(self, dtime, mr)
 				print("stalled")
 				self.stall_timer = 0
 				
-				local points = minetest.find_path(
-					rpos, self.internal_dest, 10, 1.45, 3, "A*")
-					
-				if points == nil then
-					print("failed to find path")
-					
-					set_velocity(self, 0)
-					set_animation(self, "stand")
-					
-				else
-					print("found path ".. minetest.pos_to_string(pos))
-					
-					self.wp_list = {}
-					for k,v in ipairs(points) do
-						v.y = v.y + .5
+				-- check to see if we can just jump over it
+				local should_jump = false
+				local vel = self.object:get_velocity()
+				local fpos = vector.add(pos, {x = -math.sin(yaw), y = .5, z = math.cos(yaw)})  
+				local fnode = minetest.get_node(fpos)
+				if fnode and fnode.name == "air" then
+					should_jump = true
+				end
+				print("fnode: "..(fnode.name) .. " "..dump(fpos))
+				
+				if should_jump == true then
+					if self.jump_timer > 2.0 then
+						local v = self.object:getvelocity()
+		
+						v.y = self.jump_height
+						v.x = v.x * 2.2
+						v.z = v.z * 2.2
+		
+						self.object:set_velocity(v)
 						
-						if k > 1 and not (
-							v.x == points[k-1].x and
-							v.z == points[k-1].z and
-							v.y ~= points[k-1].y
-							)
-						then
-							table.insert(self.wp_list, v)
-							
-							print(k.. " - "..minetest.pos_to_string(v));
-							minetest.add_particlespawner({
-								amount = #points,
-								time = .9 * (#points-3),
-								minpos = v,
-								maxpos = v,
-								minvel = {x=-.1, y=-.1, z=-.1},
-								maxvel = {x=.1, y=.1, z=.1},
-								minacc = {x=0, y=0, z=0},
-								maxacc = {x=0, y=0, z=0},
-								minexptime = 1.05,
-								maxexptime = 1.05,
-								minsize = 4.1,
-								maxsize = 4.1,
-								collisiondetection = false,
-								vertical = false,
-								texture = "tnt_smoke.png^[colorize:#00ff00:300",
-								playername = "singleplayer"
-							})
-						else
-							if k > 1 then
-								print(" bad wp: ".. 
-									minetest.pos_to_string(v) .. " == " ..
-									minetest.pos_to_string(points[k-1]))
-							end
-						end
+						self.jump_timer = 0
+						self.stall_timer = 0
+						self.jumping = true
 						
-						
-					--	minetest.set_node(v, {name="fire:basic_flame"})
+						print("jumping")
+					else
+						print("waiting to jump")
 					end
-					
-					if #self.wp_list == 0 then
-						print("failed to find acceptable path")
+				else
+				
+					-- use the pathfinder
+					local points = minetest.find_path(
+						rpos, self.internal_dest, 10, 1.45, 3, "A*")
+						
+					if points == nil then
+						print("failed to find path")
 						
 						set_velocity(self, 0)
 						set_animation(self, "stand")
 						
 					else
-						self.next_wp = self.wp_list[1]
-						print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
-					end
+						print("found path ".. minetest.pos_to_string(pos))
+						
+						self.wp_list = {}
+						for k,v in ipairs(points) do
+							v.y = v.y + .5
+							
+							if k > 1 and not (
+								v.x == points[k-1].x and
+								v.z == points[k-1].z and
+								v.y ~= points[k-1].y
+								)
+							then
+								table.insert(self.wp_list, v)
+								
+								print(k.. " - "..minetest.pos_to_string(v));
+								minetest.add_particlespawner({
+									amount = #points,
+									time = .9 * (#points-3),
+									minpos = v,
+									maxpos = v,
+									minvel = {x=-.1, y=-.1, z=-.1},
+									maxvel = {x=.1, y=.1, z=.1},
+									minacc = {x=0, y=0, z=0},
+									maxacc = {x=0, y=0, z=0},
+									minexptime = 1.05,
+									maxexptime = 1.05,
+									minsize = 4.1,
+									maxsize = 4.1,
+									collisiondetection = false,
+									vertical = false,
+									texture = "tnt_smoke.png^[colorize:#00ff00:300",
+									playername = "singleplayer"
+								})
+							else
+								if k > 1 then
+									print(" bad wp: ".. 
+										minetest.pos_to_string(v) .. " == " ..
+										minetest.pos_to_string(points[k-1]))
+								end
+							end
+							
+							
+						--	minetest.set_node(v, {name="fire:basic_flame"})
+						end
+						
+						if #self.wp_list == 0 then
+							print("failed to find acceptable path")
+							
+							set_velocity(self, 0)
+							set_animation(self, "stand")
+							
+						else
+							self.next_wp = self.wp_list[1]
+							print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
+						end
+						
+						walk_dest(self, pos)
+					end -- found points
 					
-					walk_dest(self, pos)
-				end
-			else
+				end -- should_jump
+			else -- stall timer
 				--print("stall timer: ".. self.stall_timer)
 				--set_animation(self, "stand")
 			end -- stall timer
