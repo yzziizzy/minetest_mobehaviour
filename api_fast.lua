@@ -1,4 +1,19 @@
 
+-- check if within map limits (-30911 to 30927)
+function within_limits(pos, radius)
+
+	if  (pos.x - radius) > -30913
+	and (pos.x + radius) <  30928
+	and (pos.y - radius) > -30913
+	and (pos.y + radius) <  30928
+	and (pos.z - radius) > -30913
+	and (pos.z + radius) <  30928 then
+		return true -- within limits
+	end
+
+	return false -- beyond limits
+end
+
 
 set_velocity = function(self, v)
 
@@ -54,13 +69,14 @@ end
 set_animation = function(self, type)
 
 	if not self.animation then
+		print("no animation")
 		return
 	end
 
 	self.animation.current = self.animation.current or ""
 
 	if type == "stand"
-	and self.animation.current ~= "stand" then
+	 then
 
 		if self.animation.stand_start
 		and self.animation.stand_end
@@ -75,7 +91,7 @@ set_animation = function(self, type)
 		end
 
 	elseif type == "walk"
-	and self.animation.current ~= "walk" then
+	then
 
 		if self.animation.walk_start
 		and self.animation.walk_end
@@ -90,7 +106,7 @@ set_animation = function(self, type)
 		end
 
 	elseif type == "run"
-	and self.animation.current ~= "run" then
+	 then
 
 		if self.animation.run_start
 		and self.animation.run_end
@@ -105,7 +121,7 @@ set_animation = function(self, type)
 		end
 
 	elseif type == "punch"
-	and self.animation.current ~= "punch" then
+	 then
 
 		if self.animation.punch_start
 		and self.animation.punch_end
@@ -118,6 +134,8 @@ set_animation = function(self, type)
 
 			self.animation.current = "punch"
 		end
+	else
+		print("invalid animation ".. self.inv_id)
 	end
 end
 
@@ -273,13 +291,89 @@ local function animal_step(self, dtime)
 end
 
 
-local function npc_step(self, dtime)
+--[[
+moveresult = {
+        touching_ground = boolean,
+        collides = boolean,
+        standing_on_object = boolean,
+        collisions = {
+            {
+                type = string, -- "node" or "object",
+                axis = string, -- "x", "y" or "z"
+                node_pos = vector, -- if type is "node"
+                object = ObjectRef, -- if type is "object"
+                old_velocity = vector,
+                new_velocity = vector,
+            },
+            ...
+        }
+    }
+]]
+
+local function walk_dest(self, pos)
+	local s = self.next_wp
+	local vec = {
+		x = pos.x - s.x,
+		y = pos.y - s.y,
+		z = pos.z - s.z
+	}
+	local yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
+	self.object:set_yaw(yaw)
+	set_velocity(self, self.walk_velocity)
+	
+	set_animation(self, "walk")
+end
+
+
+
+
+local function npc_step(self, dtime, mr)
 	local btdata = self.btData
--- 			print('newstep')
-	local pos = self.object:getpos()
-	local yaw = self.object:getyaw() or 0
+ --			print('newstep')
+	local pos = self.object:get_pos()
+	local rpos = {
+		x = math.floor(pos.x + 0.5), 
+		y = math.floor(pos.y - 0.4), 
+		z = math.floor(pos.z + 0.5)
+	}
+	local bpos = {x = rpos.x, y = rpos.y-1, z= rpos.z}
+	
+	local pos_yr = {x = pos.x, y = rpos.y, z = pos.z}
+	--print(minetest.pos_to_string(pos1) .. " -> " ..minetest.pos_to_string(pos))
+	local yaw = self.object:get_yaw() or 0
+	
+	local standing_on_node = nil
+	local standing_on_pos = nil
+	local collisions = {}
+	
+	
+	--print(dump(mr))
+	--print("p.y " .. pos.y..", rp "..minetest.pos_to_string(rpos))
+	if type(mr.collisions) == "table" then
+		for k,v in pairs(mr.collisions) do
+			
+			if v.type == "node" then 
+				local n = minetest.get_node(v.node_pos)
+				
+				if bpos.y == v.node_pos.y then
+				--	print("standing on "..n.name)
+					standing_on_node = n
+					standing_on_pos = v.node_pos
+				else
+			--		print("coll: "..n.name.." at " .. minetest.pos_to_string(v.node_pos))
+					table.insert(collisions, {p = v.node_pos, n = n})
+				end
+			end
+		end
+		
+	end 
+	
+	
+	
+	
 	
 	self.bt_timer = self.bt_timer + dtime
+	--set_animation(self, "walk")
 	
 	-- run the behavior tree every two seconds
 	if self.bt_timer > 2 then
@@ -288,7 +382,7 @@ local function npc_step(self, dtime)
 		btdata.yaw = yaw
 		btdata.mob = self
 		
-		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+		--print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
 			
 		-- inventories cannot be serialized and cause the game to crash if
 		-- placed in the entity's table
@@ -296,7 +390,7 @@ local function npc_step(self, dtime)
 		btdata.inv = inv
 		
 		bt.tick(self.bt, btdata)
-		print("<<< end >>>\n")
+		--print("<<< end >>>\n")
 		
 		-- so clear it out after running the behavior trees
 		btdata.inv = nil
@@ -306,51 +400,246 @@ local function npc_step(self, dtime)
 	end
 	
 	
-	local rpos = vector.round(pos)
+	-- process new node being stood on
 	if not vector.equals(self.last_rpos, rpos) then
+		if standing_on_node then
+			self.node_below = standing_on_node.name
+		else
+			self.node_below = "air"
+		end
 		
-		local below = minetest.get_node({x=rpos.x, y=rpos.y-2, z=rpos.z})
+		--print("below: ".. self.node_below)
 		
-		self.node_below = below.name
-		print("below: ".. self.node_below)
-		
+			
 		self.last_rpos = rpos
+		
+		
+		-- don't fall while on ladders
+		if minetest.registered_nodes[self.node_below].climbable then
+			self.object:setacceleration({
+				x = 0,
+				y = 0,
+				z = 0
+			})
+		else
+			self.object:setacceleration({
+				x = 0,
+				y = self.fall_speed,
+				z = 0
+			})
+		end
+	
 	end
 	
 	
 	-- handle movement
 	
-	local v = self.object:getvelocity()
+	local v = self.object:get_velocity()
 	
 	-- TODO: floating
 	
 
-	if minetest.registered_nodes[self.node_below].climbable then
-		self.object:setacceleration({
-			x = 0,
-			y = 0,
-			z = 0
-		})
-	else
-		self.object:setacceleration({
-			x = 0,
-			y = self.fall_speed,
-			z = 0
-		})
-	end
+	
 	
 	-- TODO: fall damage
 	
 	self.jump_timer = self.jump_timer + dtime
 	
+	-- handle new destinations
+	if self.internal_dest ~= self.destination then
+		self.internal_dest = self.destination
+		self.last_tdist = nil
+		self.arrived = false
+		
+		self.wp_list = {}
+		table.insert(self.wp_list, self.destination)
+		self.next_wp = self.destination
+		print("new destination: ".. minetest.pos_to_string(self.destination))
+		walk_dest(self, pos)
+	end
 	
-	if self.destination ~= nil then
+	
+	
+	if self.next_wp ~= nil then 
+	
+		-- target (current waypoint) distance
+		local tdist = distance3(pos, self.next_wp)
+		if self.last_tdist == nil then
+			self.last_tdist = tdist
+		end
 		
-		self.walk_timer = self.walk_timer + dtime
+		-- moved distance, since last tick
+		local mdist = distance3(pos, self.last_pos)
+		--print("tdist "..tdist)
 		
-		--print("destination ")
+		-- reset the stall timer if we moved
+		if mdist > (dtime * self.walk_velocity * 0.9) then
+			 self.stall_timer = 0
+		end	
+	
+		
+		
+		if tdist < (self.approachDistance or 0.1) and #self.wp_list <= 1 then
+			-- check arrival
+			
+			if #self.wp_list <= 1 then
+				-- arrived at final destination
+				print("final arrival")
+				
+				self.destination = nil
+				self.internal_dest = nil
+				self.wp_list = {}
+				self.next_wp = nil
+				
+				self.arrived = 1
+				
+				set_velocity(self, 0)
+				set_animation(self, "stand")
+			--[[	
+			elseif tdist <= 0.1 then
+				-- arrived at a waypoint
+				print("arrived at waypoint")
+			
+				table.remove(self.wp_list, 1)
+				self.next_wp = self.wp_list[1]
+				print("  a:next wp: ".. minetest.pos_to_string(self.next_wp))
+				
+				walk_dest(self, pos)]]
+			else
+				print("unhandled arrival case (#wp_list == ".. #self.wp_list..")"
+				.. " .. tdist = "..tdist
+				)
+			end
+		
+		
+		elseif self.last_tdist < tdist then 
+			-- moving away from the current waypoint
+			--  effectively arrived there, but must find the next best one
+			print("passed waypoint")
+			
+			-- TODO: check for final arrival
+			if #self.wp_list == 1 then
+				-- arrived
+				print("arrived, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
+				set_velocity(self, 0)
+				set_animation(self, "stand")
+			else
+				
+				table.remove(self.wp_list, 1)
+				self.next_wp = self.wp_list[1]
+				print("  b:next wp: ".. minetest.pos_to_string(self.next_wp))
+					
+				walk_dest(self, pos)
+			end
+			
+		elseif mdist < (dtime * self.walk_velocity * 0.9) then
+			self.stall_timer = self.stall_timer + dtime
+		
+			if self.stall_timer > 0.1 then
+				-- stalled on something
+				-- look for a way around
+				print("stalled")
+				self.stall_timer = 0
+				
+				local points = minetest.find_path(
+					rpos, self.internal_dest, 10, 1.45, 3, "A*")
+					
+				if points == nil then
+					print("failed to find path")
+					
+					set_velocity(self, 0)
+					set_animation(self, "stand")
+					
+				else
+					print("found path ".. minetest.pos_to_string(pos))
+					
+					self.wp_list = {}
+					for k,v in ipairs(points) do
+						v.y = v.y + .5
+						
+						if k > 1 and not (
+							v.x == points[k-1].x and
+							v.z == points[k-1].z and
+							v.y ~= points[k-1].y
+							)
+						then
+							table.insert(self.wp_list, v)
+							
+							print(k.. " - "..minetest.pos_to_string(v));
+							minetest.add_particlespawner({
+								amount = #points,
+								time = .9 * (#points-3),
+								minpos = v,
+								maxpos = v,
+								minvel = {x=-.1, y=-.1, z=-.1},
+								maxvel = {x=.1, y=.1, z=.1},
+								minacc = {x=0, y=0, z=0},
+								maxacc = {x=0, y=0, z=0},
+								minexptime = 1.05,
+								maxexptime = 1.05,
+								minsize = 4.1,
+								maxsize = 4.1,
+								collisiondetection = false,
+								vertical = false,
+								texture = "tnt_smoke.png^[colorize:#00ff00:300",
+								playername = "singleplayer"
+							})
+						else
+							if k > 1 then
+								print(" bad wp: ".. 
+									minetest.pos_to_string(v) .. " == " ..
+									minetest.pos_to_string(points[k-1]))
+							end
+						end
+						
+						
+					--	minetest.set_node(v, {name="fire:basic_flame"})
+					end
+					
+					if #self.wp_list == 0 then
+						print("failed to find acceptable path")
+						
+						set_velocity(self, 0)
+						set_animation(self, "stand")
+						
+					else
+						self.next_wp = self.wp_list[1]
+						print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
+					end
+					
+					walk_dest(self, pos)
+				end
+			else
+				--print("stall timer: ".. self.stall_timer)
+				--set_animation(self, "stand")
+			end -- stall timer
+			
+		end
+		
+		
+	
+		
+		if self.next_wp then
+			--print("setting last_tdist")
+			self.last_tdist = distance3(pos, self.next_wp)
+		else
+			--print("last_tdist = nil")
+			self.last_tdist = nil
+		end
+	else
+		--print("standing debug")
+		set_animation(self, "stand")
+	end
+	
+	
+	self.last_pos = pos
+	
+		--[[
+		
 		
 		local tdist = distance3(pos, btdata.lastpos)
+		local tdist2 = distance(pos, btdata.lastpos)
+		local dist2yr = distance(pos_yr, self.destination)
 		local dist2 = distance(pos, self.destination)
 		local dist3 = distance3(pos, self.destination)
 		-- print("walk dist ".. dist)
@@ -361,39 +650,104 @@ local function npc_step(self, dtime)
 			z = pos.z - s.z
 		}
 		
+		--set_animation(self, "walk")
 		
-		if tdist < self.walk_velocity * dtime * .9 and self.walk_timer > 1 then
-			
-			-- try to go up first
-			local n = minetest.get_node(pos)
-			print("node: "..n.name)
-			if minetest.registered_nodes[n.name].climbable then
-				print("going up")
-				set_velocity2(self, 0, 3--[[self.walkvelocity]])
-			
-			elseif self.jump_timer > 4 then
-				local v = self.object:getvelocity()
-
-				v.y = self.jump_height + 1
-				v.x = v.x * 2.2
-				v.z = v.z * 2.2
-
-				self.object:setvelocity(v)
+		if tdist2 < self.walk_velocity * dtime * .9 then
+		
+			if self.stall_timer > 4 then
+				local points = minetest.find_path(
+					pos, self.destination, 10,  self.jump_height, 3, "A*")
+					
+				if points == nil then
+					print("failed to find path")
+				else
+					print("found path")
+					for k,v in pairs(points) do
+						print(k.. " - "..minetest.pos_to_string(v));
+					--	minetest.set_node(v, {name="fire:basic_flame"})
+					end
+					
+					self.destination = table.remove(points, 1)
+					table.insert(points, #points, self.destination)
+					self.destination_queue = points
+					self.stall_timer = 0
+					print("next dest: ".. minetest.pos_to_string(self.destination))
+					
+					local s = self.destination
+					local vec = {
+						x = pos.x - s.x,
+						y = pos.y - s.y,
+						z = pos.z - s.z
+					}
+					yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
+					self.object:set_yaw(yaw)
+					set_velocity(self, self.walk_velocity)
+					set_animation(self, "walk")
+							
+				end
+			elseif self.stall_timer > 1 then
+				set_animation(self, "walk")
+				-- try to go up first
+				local n = minetest.get_node(pos)
+				--print("node: "..n.name.. " walk timer: ".. self.walk_timer)
+				if minetest.registered_nodes[n.name].climbable then
+					print("going up")
+					set_velocity2(self, 0, 3--[[self.walkvelocity] ])
 				
-				self.jump_timer = 0
+				elseif self.jump_timer > 4 then
+					local v = self.object:getvelocity()
+	
+					v.y = self.jump_height
+					v.x = v.x * 2.2
+					v.z = v.z * 2.2
+	
+					self.object:set_velocity(v)
+					
+					self.jump_timer = 0
+				end
+			else
+				set_animation(self, "stand")
 			end
+			
+			self.stall_timer = self.stall_timer + dtime
+		else
+			self.stall_timer = 0
+			set_animation(self, "stand")
 		end
 		
 		
 		yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
-		self.object:setyaw(yaw)
+		self.object:set_yaw(yaw)
 
 		
-		if dist3 < (self.approachDistance or .1) then
+		if self.destination_queue ~= nil and #self.destination_queue > 0 then
+			if dist2yr < 0.5 then
+				self.destination = table.remove(self.destination_queue, 1);
+				print("next destination: ".. minetest.pos_to_string(self.destination))
 				
+			
+				local s = self.destination
+				local vec = {
+					x = pos.x - s.x,
+					y = pos.y - s.y,
+					z = pos.z - s.z
+				}
+				yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
+				self.object:set_yaw(yaw)
+				set_velocity(self, self.walk_velocity)
+				
+				set_animation(self, "walk")
+				
+			end
+			
+		elseif dist3 < (self.approachDistance or .1) then
+			print("arrived "..self.approachDistance)	
 			-- we have arrived
 			self.destination = nil
+			self.destination_queue = nil
 			self.walk_timer = 0
+			self.stall_timer = 0
+			self.arrived = true
 			
 			-- TODO: make sure this doesn't lead to infinite loops
 			-- bump bttimer to get new directions
@@ -401,19 +755,24 @@ local function npc_step(self, dtime)
 			
 			set_velocity(self, 0)
 			set_animation(self, "stand")
+		else 
 			
-		elseif 1 == 0 then
-			print("alt")
 			-- TODO look at dy/dxz and see if we need to try to go up
 			if dist2 < (self.approachDistance or .1) then
 				set_velocity(self, 0, self.walk_velocity)
 			else
 				set_velocity(self, self.walk_velocity)
-				set_animation(self, "walk")
 			end
+			
+			set_animation(self, "walk")
 		end
+		
+		
+		self.walk_timer = self.walk_timer + dtime
+		
 	end
 	
+	]]
 	btdata.lastpos = pos
 
 end
@@ -450,7 +809,7 @@ function mobehavior:register_mob_fast(name, def)
 		initial_sprite_basepos = {x=0, y=0},
 		is_visible = true,
 		makes_footstep_sound = false,
-		automatic_rotate = false,
+		automatic_rotate = 0,
 		
 		bt_timer = 0,
 		bt = nil,
@@ -463,7 +822,7 @@ function mobehavior:register_mob_fast(name, def)
 		walk_timer = 0,
 
 		on_death = function(self, killer)
--- 			print("died")
+			print("died")
 			local p = self
 			local obj = self.object
 			if not p then return end
@@ -492,7 +851,7 @@ function mobehavior:register_mob_fast(name, def)
 		end,
 		
 		on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
--- 			print("punched")
+ 			print("punched")
 		end,
 		
 		on_step = step,
@@ -515,14 +874,24 @@ function mobehavior:register_mob_fast(name, def)
 			local btdata = self.btData
 			
 			self.inv_id= name..":"..math.random(1, 2000000000)
-			--print(btdata.id)
 			
-			btdata.lastpos = self.object:getpos()
-			btdata.last_rpos = vector.round(self.object:getpos())
+			
+			btdata.lastpos = self.object:get_pos()
+			btdata.last_rpos = vector.round(self.object:get_pos())
+			
+			self.walk_timer = 0
+			self.stall_timer = 0
+			self.destination = nil
+			self.internal_dest = nil
+			self.wp_list = {}
+			self.next_wp = nil
+			self.last_pos = btdata.lastpos
+			self.last_tdist = nil
 		
 			if type(def.pre_activate) == "function" then
 				def.pre_activate(self, static_data, dtime_s)
 			end
+			
 		
 			-- load entity variables
 			if staticdata then
@@ -607,8 +976,8 @@ function mobehavior:register_mob_fast(name, def)
 				self.object:set_armor_groups({fleshy = self.armor})
 			end
 			
-			self.old_y = self.object:getpos().y
-			self.object:setyaw(math.random(1, 360) / 180 * math.pi)
+			self.old_y = self.object:get_pos().y
+			self.object:set_yaw(math.random(1, 360) / 180 * math.pi)
 	-- 		self.sounds.distance = (self.sounds.distance or 10)
 			self.textures = textures
 			self.mesh = mesh

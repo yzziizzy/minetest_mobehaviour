@@ -68,7 +68,7 @@ function mobs:register_egg(mob, desc, background, addegg)
 			local pos = pointed_thing.above
 
 			if pos
-			and within_limits(pos, 0)
+			--and within_limits(pos, 0)
 			and not minetest.is_protected(pos, placer:get_player_name()) then
 
 				pos.y = pos.y + 1

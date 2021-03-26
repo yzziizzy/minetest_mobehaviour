@@ -427,8 +427,8 @@ function make_NPC(name, behavior_fn)
 		jump = true,
 		floats = 0,
 		drops = {
-			{name = "default:iron_lump",
-			chance = 1, min = 3, max = 5},
+		--	{name = "default:iron_lump",
+		--	chance = 1, min = 3, max = 5},
 		},
 		water_damage = 0,
 		lava_damage = 4,
