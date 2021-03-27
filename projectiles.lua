@@ -8,14 +8,14 @@ function mobehavior:register_projectile(name, _def)
 	
 	mobehavior.registered_projectiles[name] = def
 	
+	
 	local mdef = {
 		physical = true,
-		collisionbox = {-0.1,-0.1,-0.1, 0.1,0.1,0.1},
+		collisionbox = def.collsionbox or {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
 		visual = "mesh",
-		visual_size = {x=10, y=10},
-		mesh = "mobehavior_arrow.obj",
-		-- mesh = "mobs_chicken.x",
-		textures = {"mobehavior_arrow_yellow.png"},
+		visual_size = def.visual_size or 1,
+		mesh = def.mesh,
+		textures = def.textures,
 		is_visible = true,
 		
 		on_step = function(self, dtime, mr)
@@ -24,16 +24,19 @@ function mobehavior:register_projectile(name, _def)
 				return
 			end
 			
-			--local v = {x=1,y=1,z=1} --self.object:get_velocity()
-			local v = vector.dir_to_rotation(self.object:get_velocity())
-			if v ~= nil then
-				self.object:set_rotation(v)
+			-- orient the model along the flight path
+			if def.stable_flight then
+				local v = vector.dir_to_rotation(self.object:get_velocity())
+				if v ~= nil then
+					self.object:set_rotation(v)
+				end
 			end
 			
 			if mr.collisions ~= nil and #mr.collisions > 0 then
 			--	self.object:remove()
 			--	print("arrow died")
 			--	print(dump(mr.collisions))
+				
 			
 				for _,cd in ipairs(mr.collisions) do
 					self.object:set_velocity({x=0,y=0,z=0})
@@ -41,47 +44,71 @@ function mobehavior:register_projectile(name, _def)
 					
 					self.stopped = true
 					
-					
-					if cd.type == "node"  then
-					
-						
-						--[[
-						for x = -4,4 do
-						for y = -4,4 do
-						for z = -4,4 do
-							local o = {x=x,y=y,z=z}
-							local p = vector.add(cd.node_pos, o)
-							
-							if (vector.length(o)) < 2.1 then
-								minetest.set_node(p, {name="air"})
-							end
-						end
-						end
-						end
-						]]
+					if cd.type == "object" and def.damage ~= nil then
+						cd.object:punch(self.object, 1.0, {
+							full_punch_interval = 1.0,
+							damage_groups = def.damage,
+						}, nil)
 					end
 					
-					--self.object:remove()
+					
+			
+					if def.on_hit then
+						local ret = def.on_hit(self, cd)
+						if ret ~= nil and ret == false then
+							break;
+						end
+					end
+					
+					
+				end 
+				
+				if not def.persist then
+					self.object:remove()
 				end
 			end
-
 		end,
 		
-		on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
- 			print("punched")
-		end,
+	--	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
+	--		print("punched")
+	--	end,
 	}
-
-
-	for k,v in pairs(def) do
-		mdef[k] = v
-	end
 
 
 	minetest.register_entity(name, mdef)
 end
 
-mobehavior:register_projectile("mobehavior:test_arrow", {})
+
+
+function mobehavior:fire_projectile(name, pos, dir, speed)
+	local obj = minetest.env:add_entity(pos, name)
+	
+	local dir2 = vector.normalize(dir)
+	local v = vector.multiply(dir, speed)
+	
+	obj:set_velocity(v)
+	obj:set_acceleration({x=0, y=-9.81, z=0})
+end
+
+
+
+
+mobehavior:register_projectile("mobehavior:test_arrow", {
+	visual_size = {x=10, y=10},
+	mesh = "mobehavior_arrow.obj",
+	textures = {"mobehavior_arrow_yellow.png"},
+	collisionbox = {-0.1,-0.1,-0.1, 0.1,0.1,0.1},
+	
+	stable_flight = 1,
+	damage = {fleshy = 1},
+	
+	on_hit = function(self, cd)
+	
+		if cd.type == "node" then
+			minetest.set_node(cd.node_pos, {name="default:coalblock"})
+		end
+	end
+})
 
 
 minetest.register_node("mobehavior:arrow_tester", {
@@ -109,11 +136,7 @@ minetest.register_abm({
 	action = function(pos)
 			pos.y= pos.y + 1
 			
-			local obj = minetest.env:add_entity(pos, "mobehavior:test_arrow")
-			local dir = vector.normalize{x=1, y=.55, z = 0}
-			local v = vector.multiply(dir, 20)
+			mobehavior:fire_projectile("mobehavior:test_arrow", pos, {x=1, y=.55, z = 0}, 20)
 			
-			obj:set_velocity(v)
-			obj:set_acceleration({x=0, y=-9.81, z=0})
 	end,
 })
