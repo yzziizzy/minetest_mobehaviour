@@ -2,29 +2,47 @@
 
 bt.register_action("Approach", {
 	tick = function(node, data)
-		if data.targetPos == nil then 
+		if data.targetPos == nil then
+			print("A: failed")
 			return "failed" 
 		end
+		--print(dump(data.mob))
 		
+		--[[
+		if data.mob.walk_aborted == true then
+			data.mob.walk_aborted = false
+		print("B: failed")
+			return "failed"
+		end
+		
+		if data.mob.arrived == true then
+			data.mob.arrived = false
+		print("C: success")
+			return "success"
+		end
+		]]
+		--print("D: ")
 		local d = distance(data.pos, data.targetPos)
 		
-		--print("dist: "..d)
+		print("D: dist: "..d)
 		
 		if d <= node.dist then
 			print("arrived at target")
+			print("E: success")
 			return "success"
 		end
 		
+		print("F: running")
 		return "running"
 	end,
 	
 	reset = function(node, data)
 		if data.targetPos ~= nil then
-			-- debug -- print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
+			print("Approaching target ("..data.targetPos.x..","..data.targetPos.y..","..data.targetPos.z..")")
 			data.mob.destination = data.targetPos
 			data.mob.approachDistance = node.dist
 		else 
-			-- debug -- print("Approach: targetPos is nil")
+			print("Approach: targetPos is nil")
 		end
 	end,
 	
@@ -41,6 +59,14 @@ bt.register_action("TryApproach", {
 	tick = function(node, data)
 		if data.targetPos == nil then 
 			return "failed" 
+		end
+		
+		if data.mob.walk_aborted == true then
+			return "failed"
+		end
+		
+		if data.mob.arrived == true then
+			return "success"
 		end
 		
 		local d = distance(data.pos, data.targetPos)

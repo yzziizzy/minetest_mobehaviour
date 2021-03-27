@@ -1079,3 +1079,9 @@ make_NPC("npc", function()
 	return pace_debug({x=1, y=0, z=0}, 10)
 end)
 
+
+
+make_NPC("random_npc", function() 
+	return wander_around(6)
+end)
+

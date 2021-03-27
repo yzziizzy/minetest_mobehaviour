@@ -384,13 +384,14 @@ local function npc_step(self, dtime, mr)
 	
 	
 	-- run the behavior tree every two seconds
-	if self.bt_timer > 2 then
+	if self.run_bt == true and self.bt_timer > 2 then
+		
 		
 		btdata.pos = pos
 		btdata.yaw = yaw
 		btdata.mob = self
 		
-		--print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
 			
 		-- inventories cannot be serialized and cause the game to crash if
 		-- placed in the entity's table
@@ -398,13 +399,16 @@ local function npc_step(self, dtime, mr)
 		btdata.inv = inv
 		
 		bt.tick(self.bt, btdata)
-		--print("<<< end >>>\n")
+		print("<<< end >>>\n")
 		
 		-- so clear it out after running the behavior trees
 		btdata.inv = nil
 		-- the inventory exists on its own
 	
 		self.bt_timer = 0
+		
+		self.arrived = false
+		self.walk_aborted = false
 	end
 	
 	
@@ -458,6 +462,7 @@ local function npc_step(self, dtime, mr)
 		self.internal_dest = self.destination
 		self.last_tdist = nil
 		self.arrived = false
+		self.run_bt = false
 		
 		self.wp_list = {}
 		table.insert(self.wp_list, self.destination)
@@ -508,7 +513,8 @@ local function npc_step(self, dtime, mr)
 				self.wp_list = {}
 				self.next_wp = nil
 				
-				self.arrived = 1
+				self.arrived = true
+				self.run_bt = true
 				
 				set_velocity(self, 0)
 				set_animation(self, "stand")
@@ -541,7 +547,7 @@ local function npc_step(self, dtime, mr)
 				-- bug: gets stuf f you arrive too far away and the btree does not
 				--   run the next cycle. tall stairs with falling near the dest.
 				
-				print("final arrival, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
+				print("a:final arrival, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
 				--self.jumping = false
 				
 				self.destination = nil
@@ -549,7 +555,8 @@ local function npc_step(self, dtime, mr)
 				self.wp_list = {}
 				self.next_wp = nil
 				
-				self.arrived = 1
+				self.arrived = true
+				self.run_bt = true
 				
 				set_velocity(self, 0)
 				set_animation(self, "stand")
@@ -568,7 +575,7 @@ local function npc_step(self, dtime, mr)
 			if self.stall_timer > 0.1 then
 				-- stalled on something
 				-- look for a way around
-				print("stalled")
+				--print("stalled")
 				self.stall_timer = 0
 				
 				-- check to see if we can just jump over it
@@ -579,7 +586,7 @@ local function npc_step(self, dtime, mr)
 				if fnode and fnode.name == "air" then
 					should_jump = true
 				end
-				print("fnode: "..(fnode.name) .. " "..dump(fpos))
+				--print("fnode: "..(fnode.name) .. " "..dump(fpos))
 				
 				if should_jump == true then
 					if self.jump_timer > 2.0 then
@@ -597,7 +604,7 @@ local function npc_step(self, dtime, mr)
 						
 						print("jumping")
 					else
-						print("waiting to jump")
+					--	print("waiting to jump")
 					end
 				else
 				
@@ -607,6 +614,11 @@ local function npc_step(self, dtime, mr)
 						
 					if points == nil then
 						print("failed to find path")
+						
+						self.walk_aborted = true
+						self.wp_list = {}
+						self.next_wp = nil
+						self.run_bt = true
 						
 						set_velocity(self, 0)
 						set_animation(self, "stand")
@@ -660,15 +672,23 @@ local function npc_step(self, dtime, mr)
 						if #self.wp_list == 0 then
 							print("failed to find acceptable path")
 							
+							
+							self.walk_aborted = true
+							self.wp_list = {}
+							self.next_wp = nil
+							self.run_bt = true
+							
 							set_velocity(self, 0)
 							set_animation(self, "stand")
 							
 						else
 							self.next_wp = self.wp_list[1]
 							print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
+							
+							walk_dest(self, pos)
 						end
 						
-						walk_dest(self, pos)
+						
 					end -- found points
 					
 				end -- should_jump
@@ -950,6 +970,9 @@ function mobehavior:register_mob_fast(name, def)
 			self.next_wp = nil
 			self.last_pos = btdata.lastpos
 			self.last_tdist = nil
+			self.arrived = false
+			self.walk_aborted = false
+			self.run_bt = true
 		
 			if type(def.pre_activate) == "function" then
 				def.pre_activate(self, static_data, dtime_s)
@@ -976,6 +999,7 @@ function mobehavior:register_mob_fast(name, def)
 			local inventory = minetest.create_detached_inventory(self.inv_id, {})
 			inventory:set_size("main", 9)
 
+			
 			
 			-- select random texture, set model and size
 			if not self.base_texture then
@@ -1039,8 +1063,22 @@ function mobehavior:register_mob_fast(name, def)
 				self.object:set_armor_groups({fleshy = self.armor})
 			end
 			
+			if self._velocity ~= nil then
+				self.object:set_velocity(self._velocity)
+			end
+			
+			if self._animation ~= nil then
+				set_animation(self, self._animation)
+			end
+			
+			if self._rotation ~= nil then
+				self.object:set_rotation(self._rotation)
+			else
+				self.object:set_yaw(math.random(1, 360) / 180 * math.pi)
+			end
+			
 			self.old_y = self.object:get_pos().y
-			self.object:set_yaw(math.random(1, 360) / 180 * math.pi)
+			
 	-- 		self.sounds.distance = (self.sounds.distance or 10)
 			self.textures = textures
 			self.mesh = mesh
@@ -1058,22 +1096,7 @@ function mobehavior:register_mob_fast(name, def)
 
 		get_staticdata = function(self)
 
-			-- remove mob when out of range unless tamed
-			if mobs.remove
-			and self.remove_ok
-			and not self.tamed then
 
-				--print ("REMOVED", self.remove_ok, self.name)
-
-				self.object:remove()
-
-				return nil
-			end
-
-			self.remove_ok = true
-			self.attack = nil
-			self.following = nil
-			self.state = "stand"
 			
 			if self.btData ~= nil then
 				self.btData.inv = nil -- just in case
@@ -1094,6 +1117,10 @@ function mobehavior:register_mob_fast(name, def)
 					tmp[_] = self[_]
 				end
 			end
+			
+			tmp._velocity = self.object:get_velocity()
+			tmp._rotation = self.object:get_rotation()
+			tmp._animation = self.animation.name
 
 			-- print('===== '..self.name..'\n'.. dump(tmp)..'\n=====\n')
 			return minetest.serialize(tmp)
