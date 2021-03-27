@@ -97,6 +97,9 @@ end
 
 -- Mob Api
 
+dofile(path.."/projectiles.lua")
+
+
 -- new api from scratch
 dofile(path.."/api_fast.lua")
 
