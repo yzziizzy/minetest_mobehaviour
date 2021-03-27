@@ -13,7 +13,7 @@ function mobehavior:register_projectile(name, _def)
 		collisionbox = {-0.1,-0.1,-0.1, 0.1,0.1,0.1},
 		visual = "mesh",
 		visual_size = {x=10, y=10},
-		mesh = "mobehavior_arrow_toptexture.obj",
+		mesh = "mobehavior_arrow.obj",
 		-- mesh = "mobs_chicken.x",
 		textures = {"mobehavior_arrow_yellow.png"},
 		is_visible = true,
