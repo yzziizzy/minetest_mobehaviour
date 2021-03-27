@@ -2,7 +2,9 @@ mn = "mobehavior";
 local path = minetest.get_modpath(mn)
 
 
-mobehavior = {}
+mobehavior = {
+	registered_projectiles = {},
+}
 
 
 
@@ -19,10 +21,9 @@ if storagedata ~= nil and false then
 end
 
 if mobehavior.groupData == nil then 
-	mobehavior = {
-		groupData= {},
-		mobsAlive= {},
-	}
+	
+	mobehavior.groupData= {}
+	mobehavior.mobsAlive= {}
 end
 
 local saveModData = function() 

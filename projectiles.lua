@@ -2,20 +2,27 @@
 
 
 
-function mobehavior:register_projectile(name, def)
+function mobehavior:register_projectile(name, _def)
 	
+	local def = table.copy(_def)
+	
+	mobehavior.registered_projectiles[name] = def
 	
 	local mdef = {
 		physical = true,
 		collisionbox = {-0.1,-0.1,-0.1, 0.1,0.1,0.1},
 		visual = "mesh",
-		visual_size = {x=1, y=1},
-		mesh = "mobs_chicken.x",
-		textures = {"mobs_chicken.png"},
+		visual_size = {x=10, y=10},
+		mesh = "mobehavior_arrow_toptexture.obj",
+		-- mesh = "mobs_chicken.x",
+		textures = {"mobehavior_arrow_yellow.png"},
 		is_visible = true,
 		
 		on_step = function(self, dtime, mr)
 			--self.timer = self.timer + dtime
+			if self.stopped ~= nil then
+				return
+			end
 			
 			--local v = {x=1,y=1,z=1} --self.object:get_velocity()
 			local v = vector.dir_to_rotation(self.object:get_velocity())
@@ -27,9 +34,18 @@ function mobehavior:register_projectile(name, def)
 			--	self.object:remove()
 			--	print("arrow died")
 			--	print(dump(mr.collisions))
+			
 				for _,cd in ipairs(mr.collisions) do
-					if cd.type == "node" then
+					self.object:set_velocity({x=0,y=0,z=0})
+					self.object:set_acceleration({x=0,y=0,z=0})
 					
+					self.stopped = true
+					
+					
+					if cd.type == "node"  then
+					
+						
+						--[[
 						for x = -4,4 do
 						for y = -4,4 do
 						for z = -4,4 do
@@ -42,9 +58,10 @@ function mobehavior:register_projectile(name, def)
 						end
 						end
 						end
+						]]
 					end
 					
-					self.object:remove()
+					--self.object:remove()
 				end
 			end
 
@@ -70,6 +87,15 @@ mobehavior:register_projectile("mobehavior:test_arrow", {})
 minetest.register_node("mobehavior:arrow_tester", {
 	tiles = {"default_mese_block.png"},
 	description = "Arrow Tester",
+	groups = {cracky = 1},
+})
+
+minetest.register_node("mobehavior:ar2", {
+	drawtype="mesh",
+	mesh="mobehavior_arrow.obj",
+	visual_size = 10,
+	tiles = {"mobehavior_arrow_yellow.png"},
+	description = "Arrow 222",
 	groups = {cracky = 1},
 })
 
