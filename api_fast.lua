@@ -391,7 +391,7 @@ local function npc_step(self, dtime, mr)
 		btdata.yaw = yaw
 		btdata.mob = self
 		
-		print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
+		--print("\n<<< start >>> ("..math.floor(pos.x)..","..math.floor(pos.z)..")")
 			
 		-- inventories cannot be serialized and cause the game to crash if
 		-- placed in the entity's table
@@ -399,7 +399,7 @@ local function npc_step(self, dtime, mr)
 		btdata.inv = inv
 		
 		bt.tick(self.bt, btdata)
-		print("<<< end >>>\n")
+		--print("<<< end >>>\n")
 		
 		-- so clear it out after running the behavior trees
 		btdata.inv = nil
@@ -467,7 +467,7 @@ local function npc_step(self, dtime, mr)
 		self.wp_list = {}
 		table.insert(self.wp_list, self.destination)
 		self.next_wp = self.destination
-		print("new destination: ".. minetest.pos_to_string(self.destination))
+		--print("new destination: ".. minetest.pos_to_string(self.destination))
 		walk_dest(self, pos)
 	end
 	
@@ -506,7 +506,7 @@ local function npc_step(self, dtime, mr)
 			
 			if #self.wp_list <= 1 then
 				-- arrived at final destination
-				print("final arrival")
+			--	print("final arrival")
 				
 				self.destination = nil
 				self.internal_dest = nil
@@ -529,16 +529,16 @@ local function npc_step(self, dtime, mr)
 				
 				walk_dest(self, pos)]]
 			else
-				print("unhandled arrival case (#wp_list == ".. #self.wp_list..")"
-				.. " .. tdist = "..tdist
-				)
+		--		print("unhandled arrival case (#wp_list == ".. #self.wp_list..")"
+		--		.. " .. tdist = "..tdist
+		--		)
 			end
 		
 		
 		elseif self.last_tdist < tdist then 
 			-- moving away from the current waypoint
 			--  effectively arrived there, but must find the next best one
-			print("passed waypoint")
+		--	print("passed waypoint")
 			
 			-- TODO: check for final arrival
 			if #self.wp_list == 1 then
@@ -547,7 +547,7 @@ local function npc_step(self, dtime, mr)
 				-- bug: gets stuf f you arrive too far away and the btree does not
 				--   run the next cycle. tall stairs with falling near the dest.
 				
-				print("a:final arrival, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
+			--	print("a:final arrival, ".. (tdist - (self.approachDistance or 0.1)) .. " too far")
 				--self.jumping = false
 				
 				self.destination = nil
@@ -564,7 +564,7 @@ local function npc_step(self, dtime, mr)
 				
 				table.remove(self.wp_list, 1)
 				self.next_wp = self.wp_list[1]
-				print("  b:next wp: ".. minetest.pos_to_string(self.next_wp))
+			--	print("  b:next wp: ".. minetest.pos_to_string(self.next_wp))
 					
 				walk_dest(self, pos)
 			end
@@ -602,7 +602,7 @@ local function npc_step(self, dtime, mr)
 						self.stall_timer = 0
 						self.jumping = true
 						
-						print("jumping")
+			--			print("jumping")
 					else
 					--	print("waiting to jump")
 					end
@@ -613,7 +613,7 @@ local function npc_step(self, dtime, mr)
 						rpos, self.internal_dest, 10, 1.45, 3, "A*")
 						
 					if points == nil then
-						print("failed to find path")
+			--			print("failed to find path")
 						
 						self.walk_aborted = true
 						self.wp_list = {}
@@ -624,7 +624,7 @@ local function npc_step(self, dtime, mr)
 						set_animation(self, "stand")
 						
 					else
-						print("found path ".. minetest.pos_to_string(pos))
+			--			print("found path ".. minetest.pos_to_string(pos))
 						
 						self.wp_list = {}
 						for k,v in ipairs(points) do
@@ -638,6 +638,7 @@ local function npc_step(self, dtime, mr)
 							then
 								table.insert(self.wp_list, v)
 								
+								--[[
 								print(k.. " - "..minetest.pos_to_string(v));
 								minetest.add_particlespawner({
 									amount = #points,
@@ -657,12 +658,14 @@ local function npc_step(self, dtime, mr)
 									texture = "tnt_smoke.png^[colorize:#00ff00:300",
 									playername = "singleplayer"
 								})
+								
 							else
 								if k > 1 then
 									print(" bad wp: ".. 
 										minetest.pos_to_string(v) .. " == " ..
 										minetest.pos_to_string(points[k-1]))
 								end
+								]]
 							end
 							
 							
@@ -670,7 +673,7 @@ local function npc_step(self, dtime, mr)
 						end
 						
 						if #self.wp_list == 0 then
-							print("failed to find acceptable path")
+				--			print("failed to find acceptable path")
 							
 							
 							self.walk_aborted = true
@@ -683,7 +686,7 @@ local function npc_step(self, dtime, mr)
 							
 						else
 							self.next_wp = self.wp_list[1]
-							print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
+				--			print("c:next wp: ".. minetest.pos_to_string(self.next_wp))
 							
 							walk_dest(self, pos)
 						end
@@ -716,146 +719,6 @@ local function npc_step(self, dtime, mr)
 	
 	
 	self.last_pos = pos
-	
-		--[[
-		
-		
-		local tdist = distance3(pos, btdata.lastpos)
-		local tdist2 = distance(pos, btdata.lastpos)
-		local dist2yr = distance(pos_yr, self.destination)
-		local dist2 = distance(pos, self.destination)
-		local dist3 = distance3(pos, self.destination)
-		-- print("walk dist ".. dist)
-		local s = self.destination
-		local vec = {
-			x = pos.x - s.x,
-			y = pos.y - s.y,
-			z = pos.z - s.z
-		}
-		
-		--set_animation(self, "walk")
-		
-		if tdist2 < self.walk_velocity * dtime * .9 then
-		
-			if self.stall_timer > 4 then
-				local points = minetest.find_path(
-					pos, self.destination, 10,  self.jump_height, 3, "A*")
-					
-				if points == nil then
-					print("failed to find path")
-				else
-					print("found path")
-					for k,v in pairs(points) do
-						print(k.. " - "..minetest.pos_to_string(v));
-					--	minetest.set_node(v, {name="fire:basic_flame"})
-					end
-					
-					self.destination = table.remove(points, 1)
-					table.insert(points, #points, self.destination)
-					self.destination_queue = points
-					self.stall_timer = 0
-					print("next dest: ".. minetest.pos_to_string(self.destination))
-					
-					local s = self.destination
-					local vec = {
-						x = pos.x - s.x,
-						y = pos.y - s.y,
-						z = pos.z - s.z
-					}
-					yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
-					self.object:set_yaw(yaw)
-					set_velocity(self, self.walk_velocity)
-					set_animation(self, "walk")
-							
-				end
-			elseif self.stall_timer > 1 then
-				set_animation(self, "walk")
-				-- try to go up first
-				local n = minetest.get_node(pos)
-				--print("node: "..n.name.. " walk timer: ".. self.walk_timer)
-				if minetest.registered_nodes[n.name].climbable then
-					print("going up")
-					set_velocity2(self, 0, 3--[[self.walkvelocity] ])
-				
-				elseif self.jump_timer > 4 then
-					local v = self.object:getvelocity()
-	
-					v.y = self.jump_height
-					v.x = v.x * 2.2
-					v.z = v.z * 2.2
-	
-					self.object:set_velocity(v)
-					
-					self.jump_timer = 0
-				end
-			else
-				set_animation(self, "stand")
-			end
-			
-			self.stall_timer = self.stall_timer + dtime
-		else
-			self.stall_timer = 0
-			set_animation(self, "stand")
-		end
-		
-		
-		yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
-		self.object:set_yaw(yaw)
-
-		
-		if self.destination_queue ~= nil and #self.destination_queue > 0 then
-			if dist2yr < 0.5 then
-				self.destination = table.remove(self.destination_queue, 1);
-				print("next destination: ".. minetest.pos_to_string(self.destination))
-				
-			
-				local s = self.destination
-				local vec = {
-					x = pos.x - s.x,
-					y = pos.y - s.y,
-					z = pos.z - s.z
-				}
-				yaw = (math.atan2(vec.z, vec.x) + math.pi / 2) - self.rotate
-				self.object:set_yaw(yaw)
-				set_velocity(self, self.walk_velocity)
-				
-				set_animation(self, "walk")
-				
-			end
-			
-		elseif dist3 < (self.approachDistance or .1) then
-			print("arrived "..self.approachDistance)	
-			-- we have arrived
-			self.destination = nil
-			self.destination_queue = nil
-			self.walk_timer = 0
-			self.stall_timer = 0
-			self.arrived = true
-			
-			-- TODO: make sure this doesn't lead to infinite loops
-			-- bump bttimer to get new directions
-			self.bt_timer = 99
-			
-			set_velocity(self, 0)
-			set_animation(self, "stand")
-		else 
-			
-			-- TODO look at dy/dxz and see if we need to try to go up
-			if dist2 < (self.approachDistance or .1) then
-				set_velocity(self, 0, self.walk_velocity)
-			else
-				set_velocity(self, self.walk_velocity)
-			end
-			
-			set_animation(self, "walk")
-		end
-		
-		
-		self.walk_timer = self.walk_timer + dtime
-		
-	end
-	
-	]]
 	btdata.lastpos = pos
 
 end

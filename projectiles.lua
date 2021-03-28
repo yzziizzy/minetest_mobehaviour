@@ -10,16 +10,32 @@ function mobehavior:register_projectile(name, _def)
 	
 	
 	local mdef = {
-		physical = true,
-		collisionbox = def.collsionbox or {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
-		visual = "mesh",
-		visual_size = def.visual_size or 1,
-		mesh = def.mesh,
-		textures = def.textures,
-		is_visible = true,
+		
+		
+		initial_properties = {
+			hp = 1,
+			physical = true,
+			collisionbox = def.collisionbox or {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
+			selectionbox = def.selectionbox or {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
+			visual = "mesh",
+			visual_size = def.visual_size or 1,
+			mesh = def.mesh,
+			textures = def.textures,
+			is_visible = true,
+			max_lifetime = def.max_lifetime or (60 * 5), -- default 5 minute lifetime
+			--collide_with_objects = false,
+		},
+--		use_texture_alpha = "clip",
 		
 		on_step = function(self, dtime, mr)
-			--self.timer = self.timer + dtime
+			self.timer = self.timer + dtime
+			
+			if self.timer > def.max_lifetime then
+				self.object:remove()
+				return
+			end
+			
+			
 			if self.stopped ~= nil then
 				return
 			end
@@ -42,7 +58,14 @@ function mobehavior:register_projectile(name, _def)
 					self.object:set_velocity({x=0,y=0,z=0})
 					self.object:set_acceleration({x=0,y=0,z=0})
 					
+					if def.persist then
+						self.object:set_rotation(
+							vector.dir_to_rotation(cd.old_velocity)
+						)
+					end
+					
 					self.stopped = true
+					
 					
 					if cd.type == "object" and def.damage ~= nil then
 						cd.object:punch(self.object, 1.0, {
@@ -69,9 +92,66 @@ function mobehavior:register_projectile(name, _def)
 			end
 		end,
 		
-	--	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-	--		print("punched")
-	--	end,
+		on_activate = function(self, staticdata)
+			self.object:set_armor_groups({immortal = 1, punch_operable = 1})
+			
+			if staticdata then
+				local tmp = minetest.deserialize(staticdata)
+
+				if tmp then
+					for _,stat in pairs(tmp) do
+						self[_] = stat
+					end
+				end
+			end
+			
+			self.timer = self.timer or 0
+			
+			if self._velocity ~= nil then
+				self.object:set_velocity(self._velocity)
+			end
+			
+			--if self._animation ~= nil then
+			--	set_animation(self, self._animation)
+			--end
+			
+			if self._rotation ~= nil then
+				self.object:set_rotation(self._rotation)
+			else
+				self.object:set_yaw(math.random(1, 360) / 180 * math.pi)
+			end
+		end,
+		
+		get_staticdata = function(self)
+			local tmp = {}
+
+			for _,stat in pairs(self) do
+				local t = type(stat)
+
+				if  t ~= 'function'
+				and t ~= 'nil'
+				and t ~= 'userdata' then
+					tmp[_] = self[_]
+				end
+			end
+			
+			tmp._velocity = self.object:get_velocity()
+			tmp._rotation = self.object:get_rotation()
+			--tmp._animation = self.animation.name
+
+			return minetest.serialize(tmp)
+		end,
+		
+		on_death = function(self)
+		print("died")
+			return true
+		end,
+		
+		on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
+			self.object:remove()
+			print("punched")
+			return true
+		end,
 	}
 
 
@@ -81,10 +161,10 @@ end
 
 
 function mobehavior:fire_projectile(name, pos, dir, speed)
-	local obj = minetest.env:add_entity(pos, name)
+	local obj = minetest.add_entity(pos, name)
 	
 	local dir2 = vector.normalize(dir)
-	local v = vector.multiply(dir, speed)
+	local v = vector.multiply(dir2, speed)
 	
 	obj:set_velocity(v)
 	obj:set_acceleration({x=0, y=-9.81, z=0})
@@ -97,15 +177,18 @@ mobehavior:register_projectile("mobehavior:test_arrow", {
 	visual_size = {x=10, y=10},
 	mesh = "mobehavior_arrow.obj",
 	textures = {"mobehavior_arrow_yellow.png"},
-	collisionbox = {-0.1,-0.1,-0.1, 0.1,0.1,0.1},
-	
+	collisionbox = {-0.01,-0.01,-0.01, 0.01,0.01,0.01},
+	selectionbox = {-0.2,-0.2,-0.2, 0.2,0.2,0.2},
+		
+	max_lifetime = 60,
+	persist = 1,
 	stable_flight = 1,
 	damage = {fleshy = 1},
 	
 	on_hit = function(self, cd)
 	
 		if cd.type == "node" then
-			minetest.set_node(cd.node_pos, {name="default:coalblock"})
+			--minetest.set_node(cd.node_pos, {name="default:coalblock"})
 		end
 	end
 })
@@ -124,12 +207,13 @@ minetest.register_node("mobehavior:ar2", {
 	tiles = {"mobehavior_arrow_yellow.png"},
 	description = "Arrow 222",
 	groups = {cracky = 1},
+	use_texture_alpha = "clip",
 })
 
 
 minetest.register_abm({
 	nodenames = {"mobehavior:arrow_tester"},
-	interval = 4,
+	interval = 1,
 	chance = 1,
 	catch_up = false,
 
@@ -137,6 +221,15 @@ minetest.register_abm({
 			pos.y= pos.y + 1
 			
 			mobehavior:fire_projectile("mobehavior:test_arrow", pos, {x=1, y=.55, z = 0}, 20)
-			
+			--[[
+			print("firing")
+			for n = 1,50 do
+				local x = math.random(-100,100)
+				local z = math.random(-100,100)
+				local d  = vector.normalize({x=x, y=120, z = z})
+				mobehavior:fire_projectile(
+					"mobehavior:test_arrow", vector.add(pos, d), d, 9)
+			end
+			]]
 	end,
 })
