@@ -423,3 +423,25 @@ bt.register_action("AddHealth", {
 		}
 	end,
 })
+
+
+
+bt.register_action("FireProjectileAt", {
+	tick = function(node, data)
+		-- debug -- print("Punching with " .. node.tool)
+		
+		if data.targetPos == nil then 
+			return "failed" 
+		end
+		
+		mobehavior:fire_projectile_at(node.projName, data.mob.last_pos, data.targetPos)
+		
+		return "success"
+	end,
+	
+	ctor = function(projName)
+		return {
+			projName=projName,
+		}
+	end,
+})

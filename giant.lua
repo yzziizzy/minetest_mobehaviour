@@ -1076,6 +1076,36 @@ make_NPC("npc", function()
 	
 	]]
 -- 	return build_tower({x=0, z=1})
-	return pace_debug({x=.5, y= 1, z=0}, 15)
+	return pace_debug({x=1, y=0, z=0}, 10)
+end)
+
+
+
+make_NPC("random_npc", function() 
+	return wander_around(6)
+end)
+
+make_NPC("archer", function() 
+
+	local dir = {x=1, y=0, z = 0}
+	local dist = 80
+	
+	return bt.Sequence("", {
+		
+		bt.MoveHere(),
+		bt.SetWaypoint("A"),
+		bt.MoveTarget({x=dir.x*dist, y=dir.y*dist, z=dir.z*dist}),
+		bt.FindSurface(),
+		bt.SetWaypoint("B"),
+		bt.GetWaypoint("A"),
+		bt.Approach(1),
+			
+		bt.UntilFailed(bt.Succeed(bt.Sequence("pace", {
+			
+			bt.GetWaypoint("B"),
+			bt.FireProjectileAt("mobehavior:test_arrow"),
+			bt.WaitTicks(1),
+		}))),
+	})
 end)
 
