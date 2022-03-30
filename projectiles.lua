@@ -172,6 +172,53 @@ end
 
 
 
+function targeting(range, height, speed) 
+	
+	local c = height * height + range * range
+	local b = -9.81 * height - speed * speed
+	local a = -9.81 * -9.81 * 0.25
+	local t_l = math.sqrt((-b - math.sqrt(b * b - 4 * a * c)) / (2 * a)) 
+	local t_h = math.sqrt((-b + math.sqrt(b * b - 4 * a * c)) / (2 * a)) 
+	print("c: "..c)
+	print("b: "..b)
+	print("a: "..a)
+	print("l: "..t_l)
+	print("h: "..t_h)
+	local theta_l = math.acos(range / (t_l * speed))
+	local theta_h = math.acos(range / (t_h * speed))
+
+	local v_xl = range / t_l
+	local v_yl = math.sqrt(speed * speed - v_xl * v_xl)
+	
+	local v_xh = range / t_h
+	local v_yh = math.sqrt(speed * speed - v_xh * v_xh)
+
+	return v_xl, v_yl, v_xh, v_yh
+--	return theta_l, theta_h
+end
+
+function mobehavior:fire_projectile_at(name, pos, target)
+	local obj = minetest.add_entity(pos, name)
+	local range = target.x - pos.x
+	local height = pos.y - target.y	
+	
+	local speed = 39
+	--local l, h = targeting(range, height, speed)
+	local xl, yl, xh, yh = targeting(range, height, speed)
+--	local dir2 = vector.normalize(vector.subtract(target, pos))
+--	local v = vector.multiply(dir2, speed)
+	
+	obj:set_velocity({
+		--x = math.cos(l) * speed,
+		--y = math.sin(l) * speed,
+		x = xl,
+		y = yl,
+		z = 0
+	})
+	obj:set_acceleration({x=0, y=-9.81, z=0})
+end
+
+
 
 mobehavior:register_projectile("mobehavior:test_arrow", {
 	visual_size = {x=10, y=10},
